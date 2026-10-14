@@ -1,7 +1,3 @@
-/* ======================================================================
- * ส่วนทำงานของ Apps Script (ต่อจากผังที่นั่งด้านบน)
- * ====================================================================== */
-
 // ---------- ตั้งค่า ----------
 const MAP_SHEET = 'ผังที่นั่ง';
 const LOG_SHEET = 'ประวัติการแก้ไข';
@@ -12,8 +8,11 @@ const LASTSAVE_BY = 'D2', LASTSAVE_AT = 'M2';
 const WRITE_PIN = '';          // รหัสเข้าหน้าเว็บและ SAVE เช่น '6020' (เว้นว่าง = ไม่ต้องใช้รหัส)
 const ADMIN_PIN = '';          // รหัสสำหรับปุ่ม "ล้างข้อมูลทั้งหมด" บนเว็บ (เว้นว่าง = ปิดปุ่มนี้)
 const TZ = 'Asia/Bangkok';
-const LAYOUT = seatPlanLayout();
-const FIRST_MAP_ROW = planSheet(LAYOUT).firstMapRow;
+
+// ผังที่นั่งอยู่ท้ายไฟล์ (seatPlanLayout / planSheet) อ่านครั้งแรกที่ใช้
+let LAYOUT_ = null, FIRST_ROW_ = null;
+function layout_() { return LAYOUT_ || (LAYOUT_ = seatPlanLayout()); }
+function firstMapRow_() { return FIRST_ROW_ || (FIRST_ROW_ = planSheet(layout_()).firstMapRow); }
 
 // ---------- Web API ----------
 function doGet(e) {
@@ -64,19 +63,19 @@ function buildMap_(sh) {
   const cell = function (r, c) { return (r >= 1 && r <= v.length && c >= 1 && c <= width) ? String(v[r - 1][c - 1]).trim() : ''; };
   // ชื่อเดียวกัน (เช่น จอ Monitor 27" หลายจอ) จับคู่ตามลำดับในผัง: ซ้ายไปขวา บนลงล่าง
   const byLabel = {};
-  LAYOUT.order.forEach(function (id) {
-    const it = LAYOUT.items[id];
+  layout_().order.forEach(function (id) {
+    const it = layout_().items[id];
     [it.label, it.alias].forEach(function (t) { if (t) (byLabel[t] = byLabel[t] || []).push(id); });
   });
   const items = {};
-  for (let r = FIRST_MAP_ROW; r <= last; r++) {
+  for (let r = firstMapRow_(); r <= last; r++) {
     if (cell(r, 2) === 'NOTE') continue;
     for (let c = 3; c <= width; c++) {
       const cands = byLabel[cell(r, c)];
       if (!cands) continue;
       const id = cands.filter(function (x) { return !items[x]; })[0];
       if (!id) continue;
-      const it = LAYOUT.items[id];
+      const it = layout_().items[id];
       const st = cell(r + 1, c), list = it.kind === 'mon' ? SEAT_M : SEAT_S;
       if (st !== '' && list.indexOf(st) < 0) continue;
       items[id] = { id: id, kind: it.kind, label: it.name, status: [r + 1, c], note: [r + 2, c] };
@@ -279,7 +278,7 @@ function onEdit(e) {
 
   const r0 = e.range.getRow(), c0 = e.range.getColumn();
   const nr = e.range.getNumRows(), nc = e.range.getNumColumns();
-  if (r0 + nr - 1 < FIRST_MAP_ROW && !(r0 <= 3 && r0 + nr - 1 >= 3)) return;
+  if (r0 + nr - 1 < firstMapRow_() && !(r0 <= 3 && r0 + nr - 1 >= 3)) return;
 
   const m = buildMap_(sh);
   const at = {};
@@ -301,7 +300,7 @@ function onEdit(e) {
       const r = r0 + i, c = c0 + j;
       let info;
       if (r === 3) info = { id: 'ส่วนหัว', field: c <= 9 ? 'ผู้ตรวจ' : 'วันที่ตรวจ' };
-      else if (r < FIRST_MAP_ROW) continue;
+      else if (r < firstMapRow_()) continue;
       else info = at[r + ',' + c] || { id: sh.getRange(r, c).getA1Notation(), field: 'อื่น ๆ' };
       const oldV = single ? (e.oldValue === undefined ? '' : e.oldValue) : '(แก้หลายช่องพร้อมกัน)';
       const newV = single ? (e.value === undefined ? values[0][0] : e.value) : values[i][j];
@@ -318,7 +317,7 @@ function ensureSetup_() {
 
 function setupSheet() {
   const ss = SpreadsheetApp.getActive();
-  const P = planSheet(LAYOUT);
+  const P = planSheet(layout_());
 
   // เก็บค่าปัจจุบันไว้ก่อน ถ้ามีผังเดิมอยู่แล้ว
   const old = ss.getSheetByName(MAP_SHEET);
@@ -433,8 +432,8 @@ function buildListSheets_(ss, P) {
 
   const all = ss.insertSheet(ALL_SHEET, 1);
   listHeader_(all, hdr, wid);
-  const rows = LAYOUT.order.map(function (id, i) {
-    const it = LAYOUT.items[id], p = P.pos[id], row = i + 2;
+  const rows = layout_().order.map(function (id, i) {
+    const it = layout_().items[id], p = P.pos[id], row = i + 2;
     const hist = function (col) {
       return "=IFERROR(INDEX(FILTER('" + LOG_SHEET + "'!$" + col + "$2:$" + col + ",'" + LOG_SHEET + "'!$D$2:$D=$A" + row + "),COUNTIF('" + LOG_SHEET + "'!$D$2:$D,$A" + row + ")),\"\")";
     };

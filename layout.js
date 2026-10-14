@@ -1,5 +1,5 @@
 /* STATUS SEAT PLAN A320(05) — ผังที่นั่งในชีท "ผังที่นั่ง"
- * ใช้ร่วมกัน 2 ที่: หน้าเว็บ (export-excel.js) และ apps-script/Code.gs (คัดลอกส่วนนี้ไปไว้บนสุดของ Code.gs)
+ * ใช้ร่วมกัน 2 ที่: หน้าเว็บ (export-excel.js) และ apps-script/Code.gs (tools/build-code-gs.sh คัดลอกส่วนนี้ไปไว้ท้าย Code.gs)
  * ถ้าแก้ไฟล์นี้ ต้องแก้ส่วนเดียวกันใน Code.gs ให้ตรงกันด้วย
  *
  * seatPlanLayout() คืน { order:[id...], items:{id:{id,kind,zone,type,label,name}}, blocks:[...] }

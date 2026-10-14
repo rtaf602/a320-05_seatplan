@@ -10,9 +10,10 @@ cd "$(dirname "$0")/.." || exit 1
     ' *    และบันทึกประวัติลงแท็บ "ประวัติการแก้ไข" ทุกครั้งที่กด SAVE บนเว็บ' \
     ' * 3) บันทึกประวัติอัตโนมัติเมื่อมีคนแก้ไขช่องในชีทโดยตรง (onEdit)' \
     ' *' \
-    ' * ไฟล์นี้สร้างจาก layout.js + apps-script/server.js ด้วย tools/build-code-gs.sh วิธีติดตั้งดู README.md' \
+    ' * ผังที่นั่ง (ตำแหน่งช่องของแต่ละที่นั่ง/จอ) อยู่ท้ายไฟล์ คัดลอกมาจาก layout.js' \
+    ' * ไฟล์นี้สร้างจาก apps-script/server.js + layout.js ด้วย tools/build-code-gs.sh วิธีติดตั้งดู README.md' \
     ' */' ''
-  cat layout.js
-  printf '\n'
   cat apps-script/server.js
+  printf '\n// ---------- ผังที่นั่ง (จาก layout.js) ----------\n'
+  cat layout.js
 } > apps-script/Code.gs
