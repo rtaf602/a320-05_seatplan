@@ -358,6 +358,14 @@ function historyData_() {
   return { ok: true, rows: rows };
 }
 
+/**
+ * SAVE จากหน้าเว็บ
+ * แต่ละรายการ: { id, s, m, note, fields: ['s','m','note'] ที่แก้จริง, base: {s, m, note} ค่าตอนเริ่มแก้ }
+ * - เขียนเฉพาะช่องใน fields ช่องที่ไม่ได้แก้จะไม่ถูกแตะ (กันทับค่าที่คนอื่นเพิ่งบันทึก)
+ * - ถ้าค่าในชีทตอนนี้ไม่ตรงกับ base และไม่ตรงกับค่าใหม่ = มีคนแก้ช่องเดียวกันไปก่อน
+ *   จะไม่บันทึกช่องนั้น แต่ส่งกลับใน conflicts ให้หน้าเว็บถามผู้ใช้
+ * - รายการที่ไม่มี fields (หน้าเว็บรุ่นเก่า) จะเขียนทุกช่องแบบเดิม
+ */
 function saveData_(body) {
   if (WRITE_PIN && String(body.pin || '') !== WRITE_PIN) return { ok: false, error: 'pin' };
   const by = String(body.by || '').trim().slice(0, 60);
@@ -372,28 +380,79 @@ function saveData_(body) {
     const m = buildMap_(sh);
     const now = new Date();
     const logRows = [];
+    const conflicts = [];
+    const current = {};
     let saved = 0;
+    let logCache = null;
+
+    // ผู้แก้ล่าสุดของช่องนี้ จากแท็บประวัติ (อ่านเฉพาะเมื่อมีการชน)
+    const lastEdit = function (label, fieldTh) {
+      if (!logCache) {
+        const log = ss.getSheetByName(LOG_SHEET);
+        const n = log.getLastRow();
+        logCache = n > 1 ? log.getRange(2, 1, n - 1, 5).getValues() : [];
+      }
+      for (let i = logCache.length - 1; i >= 0; i--) {
+        const r = logCache[i];
+        if (String(r[3]) === label && String(r[4]) === fieldTh) {
+          return { by: (r[2] && r[2] !== '-') ? String(r[2]) : String(r[1] || ''), at: r[0] instanceof Date ? r[0].toISOString() : '' };
+        }
+      }
+      return { by: '', at: '' };
+    };
+
     changes.forEach(function (ch) {
       const it = m.items[String(ch.id)];
       if (!it) return;
-      let touched = false;
-      const set = function (pos, field, newV) {
-        const oldV = m.cell(pos[0], pos[1]);
-        if (oldV === newV) return;
-        sh.getRange(pos[0], pos[1]).setValue(newV);
-        logRows.push([now, 'หน้าเว็บ', by, it.label, field, oldV, newV]);
-        touched = true;
+      const isSeat = it.kind === 'seat';
+      const fields = Array.isArray(ch.fields) ? ch.fields : ['s', 'm', 'note'];
+      const base = ch.base && typeof ch.base === 'object' ? ch.base : null;
+      const st = m.cell(it.status[0], it.status[1]);
+      const cur = {
+        s: isSeat ? Math.max(0, SEAT_S.indexOf(st)) : 0,
+        m: isSeat ? 0 : Math.max(0, SEAT_M.indexOf(st)),
+        note: m.cell(it.note[0], it.note[1])
       };
-      if (it.kind === 'seat') set(it.status, 'สภาพที่นั่ง', SEAT_S[clamp_(ch.s)]);
-      else set(it.status, 'สภาพ Monitor', SEAT_M[clamp_(ch.m)]);
-      set(it.note, 'หมายเหตุ', String(ch.note || '').trim().slice(0, 500));
+      const spec = {
+        s: isSeat ? { pos: it.status, th: 'สภาพที่นั่ง', val: clamp_(ch.s), txt: function (x) { return SEAT_S[x]; } } : null,
+        m: isSeat ? null : { pos: it.status, th: 'สภาพ Monitor', val: clamp_(ch.m), txt: function (x) { return SEAT_M[x]; } },
+        note: { pos: it.note, th: 'หมายเหตุ', val: String(ch.note || '').trim().slice(0, 500), txt: function (x) { return x; } }
+      };
+      let touched = false;
+      ['s', 'm', 'note'].forEach(function (f) {
+        const sp = spec[f];
+        if (!sp || fields.indexOf(f) < 0) return;
+        if (cur[f] === sp.val) return;
+        if (base && f in base) {
+          const b = f === 'note' ? String(base[f] || '').trim() : clamp_(base[f]);
+          if (cur[f] !== b) {
+            const le = lastEdit(it.label, sp.th);
+            conflicts.push({ id: it.id, label: it.label, field: f, cur: cur[f], mine: sp.val, by: le.by, at: le.at });
+            return;
+          }
+        }
+        const oldV = m.cell(sp.pos[0], sp.pos[1]);
+        const newV = sp.txt(sp.val);
+        sh.getRange(sp.pos[0], sp.pos[1]).setValue(newV);
+        logRows.push([now, 'หน้าเว็บ', by, it.label, sp.th, oldV, newV]);
+        cur[f] = sp.val;
+        touched = true;
+      });
+      current[it.id] = cur;
       if (touched) saved++;
     });
     appendLog_(ss, logRows);
-    markSave_(sh, by, now);
-    const lastSave = { by: by, at: now.toISOString(), n: saved };
-    PropertiesService.getScriptProperties().setProperty('lastSave', JSON.stringify(lastSave));
-    return { ok: true, saved: saved, at: now.toISOString(), lastSave: lastSave };
+    const props = PropertiesService.getScriptProperties();
+    let lastSave;
+    if (saved) {
+      markSave_(sh, by, now);
+      lastSave = { by: by, at: now.toISOString(), n: saved };
+      props.setProperty('lastSave', JSON.stringify(lastSave));
+    } else {
+      const ls = props.getProperty('lastSave');
+      lastSave = ls ? JSON.parse(ls) : null;
+    }
+    return { ok: true, saved: saved, at: now.toISOString(), lastSave: lastSave, conflicts: conflicts, current: current };
   } finally {
     lock.releaseLock();
   }
