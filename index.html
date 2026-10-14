@@ -15,19 +15,19 @@ img{max-width:100%}
 /* Layout: sticky status bar, summary tables, then the A320(05) cabin drawn nose-to-tail as five zone panels. */
 :root{
   --bg:#eef2f6; --panel:#ffffff; --cabin:#dfeaf5; --ink:#14212e; --muted:#566575; --line:#c5d0dc;
-  --accent:#1f5fa8; --accent-ink:#ffffff; --rowno:#35547c;
+  --accent:#1f5fa8; --accent-ink:#ffffff; --rowno:#35547c; --room:rgba(255,255,255,.45);
   --ok:#2e9d57; --ok-soft:#d6f0df; --warn:#e2a400; --warn-soft:#fdf0c4; --bad:#d23b33; --bad-soft:#fbdad7;
   --on-status:#10202b;
   --sans:"IBM Plex Sans Thai","Noto Sans Thai",Tahoma,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0e151c; --panel:#17212b; --cabin:#1c2a38; --ink:#e6edf4; --muted:#9aa9b8; --line:#33455a;
-  --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6;
+  --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6; --room:rgba(23,33,43,.45);
   --ok:#3fb56c; --ok-soft:#173a26; --warn:#e9b422; --warn-soft:#40330d; --bad:#ea5a52; --bad-soft:#451b19;
   --on-status:#08131f; color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#0e151c; --panel:#17212b; --cabin:#1c2a38; --ink:#e6edf4; --muted:#9aa9b8; --line:#33455a;
-  --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6;
+  --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6; --room:rgba(23,33,43,.45);
   --ok:#3fb56c; --ok-soft:#173a26; --warn:#e9b422; --warn-soft:#40330d; --bad:#ea5a52; --bad-soft:#451b19;
   --on-status:#08131f; color-scheme:dark }
 *{box-sizing:border-box}
@@ -95,7 +95,7 @@ th i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:
 .stack{display:flex;flex-direction:column;gap:20px}
 .sofa,.tbl{border-radius:10px;border:2px dashed var(--muted);background:var(--panel);color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.08em;display:flex;align-items:center;justify-content:center}
 .sofa{width:calc(2 * var(--sw) + var(--sg));align-self:stretch}
-.room{display:flex;flex-direction:column;align-items:center;gap:8px;border:2px solid var(--rowno);border-radius:8px;padding:6px 6px 8px;background:color-mix(in srgb,var(--panel) 45%,transparent)}
+.room{display:flex;flex-direction:column;align-items:center;gap:8px;border:2px solid var(--rowno);border-radius:8px;padding:6px 6px 8px;background:var(--room)}
 .roomname{font-size:11px;font-weight:600;color:var(--rowno);line-height:1.2;text-align:center}
 .side.col{flex-direction:column;align-items:center;gap:8px}
 .seatrow{display:flex;gap:var(--sg)}
@@ -157,6 +157,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 
 /* report used by PREVIEW and PDF: always light, fixed A4-ish width */
 .report{
+  --room:rgba(255,255,255,.45); --rowno:#35547c;
   --bg:#ffffff; --panel:#ffffff; --cabin:#eef4fa; --ink:#14212e; --muted:#566575; --line:#c5d0dc;
   --accent:#1f5fa8; --accent-ink:#ffffff; --ok:#2e9d57; --ok-soft:#d6f0df; --warn:#e2a400; --warn-soft:#fdf0c4; --bad:#d23b33; --bad-soft:#fbdad7; --on-status:#10202b;
   background:var(--bg);color:var(--ink);width:794px;max-width:none;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:14px;font-family:var(--sans)}
