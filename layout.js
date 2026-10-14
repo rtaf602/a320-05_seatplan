@@ -11,9 +11,9 @@
 var SEAT_S = ['ปกติ', 'ขัดข้อง-ใช้ได้', 'ใช้ไม่ได้'];
 var SEAT_M = ['จอปกติ', 'จอเสื่อม', 'จอเสีย'];
 var SEAT_MT = {
-  w21: { name: 'Wall Mounted Monitor 21.5 Inch', short: 'Monitor 21.5"' },
-  w27: { name: 'Wall Mounted Monitor 27.0 Inch', short: 'Monitor 27"' },
-  b12: { name: 'Bin Mounted Retractable Monitors (OVHD Monitor) 12 Inch', short: 'OVHD Monitor 12"' }
+  w21: { name: 'Wall Mounted Monitor 21.5 Inch', short: 'Monitor 21.5"', color: '#8ED873' },   // เขียว
+  w27: { name: 'Wall Mounted Monitor 27.0 Inch', short: 'Monitor 27"', color: '#9FC5E8' },     // ฟ้า
+  b12: { name: 'Bin Mounted Retractable Monitors (OVHD Monitor) 12 Inch', short: 'OVHD Monitor 12"', color: '#B4A7D6' }  // ม่วง
 };
 var SEAT_MT_ORDER = ['w21', 'w27', 'b12'];
 var SEAT_ZONES = [
@@ -68,7 +68,7 @@ function seatPlanLayout() {
   seat('6A', 'B'); seat('6D', 'B'); seat('6F', 'B'); blk('B', '6', [{ id: '6A', c: L1 }, { id: '6D', c: R2S }, { id: '6F', c: R2S + 2 }]);
   blk('B', 'Monitor', [{ id: 'MON-B3', c: L1 }, { id: 'MON-B4', c: R2S, span: 4 }]);
 
-  zone('C', 'VIP OC · Business Class (8 Seats)', 'VIP OC');
+  zone('C', 'VIP OC (8 Seats)', 'VIP OC');
   mon('MON-C1', 'C', 'w21', 'หน้าที่นั่ง 7B, 7C', 'หน้า 7B-7C');
   mon('MON-C2', 'C', 'w21', 'หน้าที่นั่ง 7D, 7F', 'หน้า 7D-7F');
   blk('C', 'Monitor', [{ id: 'MON-C1', c: L2, span: 4 }, { id: 'MON-C2', c: R2S, span: 4 }]);
@@ -77,7 +77,7 @@ function seatPlanLayout() {
     blk('C', String(n), [{ id: n + 'B', c: L2 }, { id: n + 'C', c: L2 + 2 }, { id: n + 'D', c: R2S }, { id: n + 'F', c: R2S + 2 }]);
   });
 
-  zone('D', 'Passenger OD · Economy Class (54 Seats)', 'ECONOMY');
+  zone('D', 'Passenger OD (54 Seats)', 'ECONOMY');
   mon('MON-D1', 'D', 'w21', 'หน้าที่นั่ง 9A, 9B, 9C', 'หน้า 9A-9C');
   mon('MON-D2', 'D', 'w21', 'หน้าที่นั่ง 9D, 9E, 9F', 'หน้า 9D-9F');
   blk('D', 'Monitor', [{ id: 'MON-D1', c: C1, span: 6 }, { id: 'MON-D2', c: R1, span: 6 }]);
@@ -166,7 +166,7 @@ function planSheet(L) {
       var span = x.span || 2;
       if (x.text) { op({ r: r, c: x.c, rs: 3, cs: span, v: x.text, fill: C.TABLE, font: { i: true, sz: 8, color: C.MUTED }, align: mid, border: true }); return; }
       var it = L.items[x.id], isMon = it.kind === 'mon';
-      op({ r: r, c: x.c, cs: span, v: it.label, fill: isMon ? C.MGREEN : C.GREEN, font: { b: true, sz: isMon ? 8 : 11 }, align: mid, border: true });
+      op({ r: r, c: x.c, cs: span, v: it.label, fill: isMon ? SEAT_MT[it.type].color : C.GREEN, font: { b: true, sz: isMon ? 8 : 11 }, align: mid, border: true });
       op({ r: r + 1, c: x.c, cs: span, v: isMon ? SEAT_M[0] : SEAT_S[0], fill: C.WHITE, font: { sz: 8 }, align: mid, border: true, dv: isMon ? 'M' : 'S' });
       op({ r: r + 2, c: x.c, cs: span, fill: C.WHITE, font: { sz: 8 }, align: { h: 'left', v: 'top', wrap: true }, border: true });
       pos[x.id] = { label: [r, x.c], status: [r + 1, x.c], note: [r + 2, x.c] };
@@ -203,7 +203,7 @@ function planSheet(L) {
   heights[tr] = 22;
   SEAT_MT_ORDER.forEach(function (t, i) {
     var row = ST + 1 + i, cells = typeCells[t] || [];
-    op({ r: row, c: 2, cs: 7, v: SEAT_MT[t].name, font: { b: true, sz: 8 }, align: { v: 'middle' }, border: true });
+    op({ r: row, c: 2, cs: 7, v: SEAT_MT[t].name, fill: SEAT_MT[t].color, font: { b: true, sz: 8 }, align: { v: 'middle' }, border: true });
     op({ r: row, c: 10, v: '=K' + row + '+L' + row + '+M' + row, q: { ids: monsOf(null, t), f: 'm', vals: [0, 1, 2] }, fill: C.BLUE, font: { sz: 9 }, align: mid, border: true });
     SEAT_M.forEach(function (s, j) {
       op({ r: row, c: 11 + j, v: '=' + cells.map(function (a) { return 'N(' + a + '="' + s + '")'; }).join('+'), q: { ids: monsOf(null, t), f: 'm', vals: [j] }, fill: [C.MGREEN, C.YEL, C.RED][j], font: { sz: 9 }, align: mid, border: true });
