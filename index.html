@@ -15,19 +15,19 @@ img{max-width:100%}
 /* Layout: sticky status bar, summary tables, then the A320(05) cabin drawn nose-to-tail as five zone panels. */
 :root{
   --bg:#eef2f6; --panel:#ffffff; --cabin:#dfeaf5; --ink:#14212e; --muted:#566575; --line:#c5d0dc;
-  --accent:#1f5fa8; --accent-ink:#ffffff; --rowno:#35547c; --room:rgba(255,255,255,.45); --bin-ok:#86c9a0;
+  --accent:#1f5fa8; --accent-ink:#ffffff; --rowno:#35547c; --room:rgba(255,255,255,.45); --mon21:#8ed873; --mon27:#9fc5e8; --monb:#b4a7d6;
   --ok:#2e9d57; --ok-soft:#d6f0df; --warn:#e2a400; --warn-soft:#fdf0c4; --bad:#d23b33; --bad-soft:#fbdad7;
   --on-status:#10202b;
   --sans:"IBM Plex Sans Thai","Noto Sans Thai",Tahoma,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0e151c; --panel:#17212b; --cabin:#1c2a38; --ink:#e6edf4; --muted:#9aa9b8; --line:#33455a;
-  --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6; --room:rgba(23,33,43,.45); --bin-ok:#3f8a5c;
+  --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6; --room:rgba(23,33,43,.45); --mon21:#5e9e4a; --mon27:#4f81ad; --monb:#7a6bb0;
   --ok:#3fb56c; --ok-soft:#173a26; --warn:#e9b422; --warn-soft:#40330d; --bad:#ea5a52; --bad-soft:#451b19;
   --on-status:#08131f; color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#0e151c; --panel:#17212b; --cabin:#1c2a38; --ink:#e6edf4; --muted:#9aa9b8; --line:#33455a;
-  --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6; --room:rgba(23,33,43,.45); --bin-ok:#3f8a5c;
+  --accent:#6aa9ee; --accent-ink:#08131f; --rowno:#9dbde6; --room:rgba(23,33,43,.45); --mon21:#5e9e4a; --mon27:#4f81ad; --monb:#7a6bb0;
   --ok:#3fb56c; --ok-soft:#173a26; --warn:#e9b422; --warn-soft:#40330d; --bad:#ea5a52; --bad-soft:#451b19;
   --on-status:#08131f; color-scheme:dark }
 *{box-sizing:border-box}
@@ -87,8 +87,10 @@ th i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:
 .ovhrow{align-items:center;min-height:24px}
 /* OVHD (bin) monitors: a thin bar the width of the seat group, so the economy rows stay compact */
 .ovhrow.binrow{min-height:0}
-.ovh.bin{width:100%;padding:1px 0;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.12em;line-height:14px;background:var(--bin-ok)}
-.ovh.bin[data-m="1"]{background:var(--warn)} .ovh.bin[data-m="2"]{background:var(--bad)}
+.ovh.bin{width:100%;padding:1px 0;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.12em;line-height:14px}
+/* monitor colour by type (same colours as the Google Sheet); a degraded / broken monitor still shows yellow / red */
+.ovh.t-w21{background:var(--mon21)} .ovh.t-w27{background:var(--mon27)} .ovh.t-b12{background:var(--monb)}
+.ovh.ovh[data-m="1"]{background:var(--warn)} .ovh.ovh[data-m="2"]{background:var(--bad)}
 .ovh{border:0;cursor:pointer;background:var(--ok);color:var(--on-status);font-size:11px;font-weight:600;border-radius:3px;padding:3px 12px;white-space:nowrap;position:relative}
 /* hover / keyboard-focus tooltip naming the monitor type */
 .ovh[data-tip]:hover::after,.ovh[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--bg);font-size:12px;font-weight:500;line-height:1.35;padding:6px 9px;border-radius:6px;white-space:pre;text-align:left;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
@@ -161,7 +163,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 
 /* report used by PREVIEW and PDF: always light, fixed A4-ish width */
 .report{
-  --room:rgba(255,255,255,.45); --bin-ok:#86c9a0; --rowno:#35547c;
+  --room:rgba(255,255,255,.45); --mon21:#8ed873; --mon27:#9fc5e8; --monb:#b4a7d6; --rowno:#35547c;
   --bg:#ffffff; --panel:#ffffff; --cabin:#eef4fa; --ink:#14212e; --muted:#566575; --line:#c5d0dc;
   --accent:#1f5fa8; --accent-ink:#ffffff; --ok:#2e9d57; --ok-soft:#d6f0df; --warn:#e2a400; --warn-soft:#fdf0c4; --bad:#d23b33; --bad-soft:#fbdad7; --on-status:#10202b;
   background:var(--bg);color:var(--ink);width:794px;max-width:none;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:14px;font-family:var(--sans)}
@@ -226,7 +228,9 @@ dialog.wide[open]{display:flex;flex-direction:column}
     <span><i class="sw" style="background:var(--ok)"></i>ใช้งานได้ปกติ</span>
     <span><i class="sw" style="background:var(--warn)"></i>ขัดข้องแต่ใช้ได้ / Manual ได้ (!)</span>
     <span><i class="sw" style="background:var(--bad)"></i>ใช้งานไม่ได้ (×)</span>
-    <span><i class="sw mon" style="background:var(--ok)"></i>ป้าย Monitor = จอติดผนัง · OVHD Monitor = จอพับเหนือที่นั่ง<span class="nopdf">&nbsp;(ชี้เมาส์ที่ป้ายเพื่อดูชนิดจอ)</span></span>
+    <span><i class="sw mon" style="background:var(--mon21)"></i>Monitor 21.5"</span>
+    <span><i class="sw mon" style="background:var(--mon27)"></i>Monitor 27"</span>
+    <span><i class="sw mon" style="background:var(--monb);border-radius:8px"></i>OVHD Monitor 12"<span class="nopdf">&nbsp;(ชี้เมาส์ที่ป้ายเพื่อดูรายละเอียด)</span></span>
     <span><i class="sw" style="background:var(--ok);border-bottom:4px solid var(--ink);box-sizing:border-box"></i>ขีดล่าง = มีหมายเหตุ</span>
     <span class="nopdf"><i class="sw" style="background:var(--ok);outline:2px dashed var(--accent);outline-offset:2px"></i>เส้นประ = แก้ไขแล้ว ยังไม่ SAVE</span>
   </div>
@@ -366,7 +370,7 @@ function seatBtn(id){
   b.appendChild(el('span','s',named?SEAT_NAME[id]:id));return b;
 }
 function monLabel(id,v){MTYPE[id]=v[0];return MT[v[0]].name+' · '+v[1]}
-function monBtn(id){var bin=MTYPE[id]==='b12',b=el('button','ovh'+(bin?' bin':''),bin?'OVHD':'Monitor');b.type='button';b.dataset.id=id;return b}
+function monBtn(id){var bin=MTYPE[id]==='b12',b=el('button','ovh t-'+MTYPE[id]+(bin?' bin':''),bin?'OVHD':'Monitor');b.type='button';b.dataset.id=id;return b}
 
 function build(){
   var host=$('zones');host.style.display='flex';host.style.flexDirection='column';host.style.gap='16px';
