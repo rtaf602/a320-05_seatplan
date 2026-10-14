@@ -343,7 +343,10 @@ function setupSheet() {
     });
   }
 
-  const sh = ss.insertSheet(MAP_SHEET + ' (ใหม่)', 0);
+  const tmpName = MAP_SHEET + ' (ใหม่)';
+  const leftover = ss.getSheetByName(tmpName);   // จากการรันครั้งก่อนที่ค้างกลางทาง
+  if (leftover) ss.deleteSheet(leftover);
+  const sh = ss.insertSheet(tmpName, 0);
   applyPlan_(sh, P);
   if (keep) {
     keep.head.forEach(function (h) { if (h[1] !== '') sh.getRange(h[0]).setValue(h[1]); });
@@ -363,9 +366,11 @@ function setupSheet() {
     log.getRange('A2:A').setNumberFormat('dd/MM/yyyy HH:mm:ss');
   }
 
-  [ALL_SHEET, BAD_SHEET].forEach(function (n) { const s = ss.getSheetByName(n); if (s) ss.deleteSheet(s); });
+  // แท็บรายการอ้างถึงแท็บผังเดิม: ล้างสูตรก่อนลบผังเดิม แล้วสร้างใหม่ในแท็บเดิม (ไม่ลบแท็บ)
+  [ALL_SHEET, BAD_SHEET].forEach(function (n) { const s = ss.getSheetByName(n); if (s) s.clear(); });
   if (old) ss.deleteSheet(old);
   sh.setName(MAP_SHEET);
+  SpreadsheetApp.flush();
   buildListSheets_(ss, P);
 
   // ลบแท็บว่าง Sheet1 / แผ่นงาน1 ที่มากับไฟล์ใหม่
@@ -425,6 +430,20 @@ function applyPlan_(sh, P) {
   sh.setFrozenRows(0);
 }
 
+/** ใช้แท็บเดิมถ้ามี (ล้างทุกอย่างก่อน) ไม่มีก็สร้างใหม่ */
+function listSheet_(ss, name, index) {
+  let s = ss.getSheetByName(name);
+  if (s) {
+    s.clear();
+    s.clearConditionalFormatRules();
+    s.setFrozenRows(0);
+    const f = s.getFilter(); if (f) f.remove();
+  } else {
+    s = ss.insertSheet(name, index);
+  }
+  return s;
+}
+
 function listHeader_(s, titles, widths) {
   s.getRange(1, 1, 1, titles.length).setValues([titles]).setFontWeight('bold').setBackground(SEAT_COLOR.ZONEH)
     .setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true)
@@ -442,7 +461,7 @@ function buildListSheets_(ss, P) {
   const hdr = ['ที่นั่ง / จุด', 'ประเภท', 'โซน', 'สภาพที่นั่ง', 'สภาพ Monitor', 'หมายเหตุ', 'ผู้บันทึกล่าสุด', 'วัน/เวลาล่าสุด (TH-LT)'];
   const wid = [330, 80, 140, 110, 100, 300, 180, 140];
 
-  const all = ss.insertSheet(ALL_SHEET, 1);
+  const all = listSheet_(ss, ALL_SHEET, 1);
   listHeader_(all, hdr, wid);
   const rows = layout_().order.map(function (id, i) {
     const it = layout_().items[id], p = P.pos[id], row = i + 2;
@@ -461,7 +480,7 @@ function buildListSheets_(ss, P) {
   all.getRange(2, 8, rows.length, 1).setNumberFormat('dd/MM/yyyy HH:mm').setHorizontalAlignment('center');
   statusColors_(all, rows.length + 1);
 
-  const bad = ss.insertSheet(BAD_SHEET, 1);
+  const bad = listSheet_(ss, BAD_SHEET, 1);
   listHeader_(bad, hdr, wid);
   const s = "'" + ALL_SHEET + "'!";
   bad.getRange('A2').setFormula('=IFERROR(FILTER(' + s + 'A2:H,(' + s + 'D2:D="' + SEAT_S[1] + '")+(' + s + 'D2:D="' + SEAT_S[2] + '")+(' +
