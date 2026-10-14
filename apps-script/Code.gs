@@ -550,7 +550,7 @@ function seatPlanLayout() {
   title('F', 'ห้อง Commander Center', C1, 6);
   blk('F', 'Monitor', [{ id: 'MON-F1', c: L2, span: 4 }, { id: 'MON-F2', c: R1, span: 6 }], true);
   seat('CC1A', 'F', 'CC 1A', 'Commander Center 1A'); seat('1D', 'F'); seat('1E', 'F'); seat('1F', 'F');
-  blk('F', '1', [{ id: 'CC1A', c: C1, span: 6 }, { id: '1D', c: R1 }, { id: '1E', c: R2 }, { id: '1F', c: R3 }], true);
+  blk('F', '1', [{ id: 'CC1A', c: L2, span: 4 }, { id: '1D', c: R1 }, { id: '1E', c: R2 }, { id: '1F', c: R3 }], true);
 
   zone('A', 'VVIP OA (4 Seats)', 'VVIP OA');
   mon('MON-A1', 'A', 'w27', 'หน้าที่นั่ง 2A', 'หน้า 2A');
