@@ -62,14 +62,20 @@ function buildMap_(sh) {
   const width = Math.max(sh.getLastColumn(), 15);
   const v = sh.getRange(1, 1, last + 2, width).getDisplayValues();
   const cell = function (r, c) { return (r >= 1 && r <= v.length && c >= 1 && c <= width) ? String(v[r - 1][c - 1]).trim() : ''; };
+  // ชื่อเดียวกัน (เช่น จอ Monitor 27" หลายจอ) จับคู่ตามลำดับในผัง: ซ้ายไปขวา บนลงล่าง
   const byLabel = {};
-  LAYOUT.order.forEach(function (id) { byLabel[LAYOUT.items[id].label] = id; });
+  LAYOUT.order.forEach(function (id) {
+    const it = LAYOUT.items[id];
+    [it.label, it.alias].forEach(function (t) { if (t) (byLabel[t] = byLabel[t] || []).push(id); });
+  });
   const items = {};
   for (let r = FIRST_MAP_ROW; r <= last; r++) {
     if (cell(r, 2) === 'NOTE') continue;
     for (let c = 3; c <= width; c++) {
-      const id = byLabel[cell(r, c)];
-      if (!id || items[id]) continue;
+      const cands = byLabel[cell(r, c)];
+      if (!cands) continue;
+      const id = cands.filter(function (x) { return !items[x]; })[0];
+      if (!id) continue;
       const it = LAYOUT.items[id];
       const st = cell(r + 1, c), list = it.kind === 'mon' ? SEAT_M : SEAT_S;
       if (st !== '' && list.indexOf(st) < 0) continue;

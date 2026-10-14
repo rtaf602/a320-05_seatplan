@@ -14,7 +14,8 @@
  * ถ้าแก้ไฟล์นี้ ต้องแก้ส่วนเดียวกันใน Code.gs ให้ตรงกันด้วย
  *
  * seatPlanLayout() คืน { order:[id...], items:{id:{id,kind,zone,type,label,name}}, blocks:[...] }
- *   label = ข้อความในช่องหัวของที่นั่ง/จอในชีท (ห้ามซ้ำกัน ใช้หาตำแหน่งช่อง)
+ *   label = ข้อความในช่องหัวของที่นั่ง/จอในชีท ใช้หาตำแหน่งช่อง (จอชนิดเดียวกันใช้ชื่อซ้ำกันได้ จับคู่ตามลำดับซ้ายไปขวา บนลงล่าง)
+ *   alias = ชื่อจอแบบเดิม (มีตำแหน่งต่อท้าย) ใช้อ่านชีทที่สร้างด้วยรุ่นก่อน
  *   name  = ชื่อที่ใช้ในแท็บ "ทุกที่นั่ง และ Monitor" และ "ประวัติการแก้ไข"
  * planSheet(L) คืนรายการช่องที่ต้องเขียน/จัดรูปแบบ และตำแหน่งของแต่ละที่นั่ง/จอ
  */
@@ -39,49 +40,52 @@ function seatPlanLayout() {
   var items = {}, order = [], blocks = [];
   function seat(id, zone, label, name) { items[id] = { id: id, kind: 'seat', zone: zone, label: label || id, name: name || id }; order.push(id); }
   function mon(id, zone, type, posLong, posShort) {
-    items[id] = { id: id, kind: 'mon', zone: zone, type: type, label: SEAT_MT[type].short + ' · ' + posShort, name: SEAT_MT[type].name + ' · ' + posLong };
+    items[id] = { id: id, kind: 'mon', zone: zone, type: type, label: SEAT_MT[type].short, alias: SEAT_MT[type].short + ' · ' + posShort, name: SEAT_MT[type].name + ' · ' + posLong };
     order.push(id);
   }
   function zone(k, title, tag) { blocks.push({ t: 'zone', zone: k, title: title, tag: tag }); }
   /* one block = 3 sheet rows (label / status / note). cells: {id,c,span} or {text,c,span} */
   function blk(k, b, cells, room) { blocks.push({ t: 'blk', zone: k, b: b, cells: cells, room: !!room }); }
-  var C1 = 3, C2 = 5, C3 = 7, R1 = 10, R2 = 12, R3 = 14;  // C E G | J L N
+  function title(k, text, c, span) { blocks.push({ t: 'title', zone: k, text: text, c: c, span: span, room: true }); }
+  var C1 = 3, C2 = 5, C3 = 7, R1 = 10, R2 = 12, R3 = 14;  // C E G | J L N  (left side C..H, right side J..O)
+  var L1 = 5, L2 = 4, R2S = 11;                             // centred: 1 seat at E, 2 seats at D-G, 2 seats right at K-N
 
   zone('F', 'Front Crew Zone (4 Seats)', 'CREW');
   mon('MON-F1', 'F', 'w21', 'หน้าที่นั่ง CC 1A', 'หน้า CC 1A');
   mon('MON-F2', 'F', 'w21', 'หน้าที่นั่ง 1D, 1E, 1F', 'หน้า 1D-1F');
-  blk('F', 'Monitor', [{ id: 'MON-F1', c: C1, span: 4 }, { id: 'MON-F2', c: R1, span: 6 }], true);
+  title('F', 'ห้อง Commander Center', C1, 6);
+  blk('F', 'Monitor', [{ id: 'MON-F1', c: L2, span: 4 }, { id: 'MON-F2', c: R1, span: 6 }], true);
   seat('CC1A', 'F', 'CC 1A', 'Commander Center 1A'); seat('1D', 'F'); seat('1E', 'F'); seat('1F', 'F');
-  blk('F', '1', [{ id: 'CC1A', c: C1, span: 4 }, { id: '1D', c: R1 }, { id: '1E', c: R2 }, { id: '1F', c: R3 }], true);
+  blk('F', '1', [{ id: 'CC1A', c: C1, span: 6 }, { id: '1D', c: R1 }, { id: '1E', c: R2 }, { id: '1F', c: R3 }], true);
 
   zone('A', 'VVIP OA (4 Seats)', 'VVIP OA');
   mon('MON-A1', 'A', 'w27', 'หน้าที่นั่ง 2A', 'หน้า 2A');
   mon('MON-A2', 'A', 'w27', 'หน้าที่นั่ง 3D, 3F', 'หน้า 3D-3F');
   mon('MON-A3', 'A', 'w27', 'หลังที่นั่ง 4A', 'หลัง 4A');
-  blk('A', 'Monitor', [{ id: 'MON-A1', c: C1 }, { id: 'MON-A2', c: R1, span: 4 }]);
-  seat('2A', 'A'); blk('A', '2', [{ id: '2A', c: C1 }]);
-  seat('3D', 'A'); seat('3F', 'A'); blk('A', '3', [{ text: 'TABLE', c: C1 }, { id: '3D', c: R1 }, { id: '3F', c: R2 }]);
-  seat('4A', 'A'); blk('A', '4', [{ id: '4A', c: C1 }]);
-  blk('A', 'Monitor', [{ id: 'MON-A3', c: C1 }]);
+  blk('A', 'Monitor', [{ id: 'MON-A1', c: L1 }, { id: 'MON-A2', c: R2S, span: 4 }]);
+  seat('2A', 'A'); blk('A', '2', [{ id: '2A', c: L1 }]);
+  seat('3D', 'A'); seat('3F', 'A'); blk('A', '3', [{ text: 'TABLE', c: L1 }, { id: '3D', c: R2S }, { id: '3F', c: R2S + 2 }]);
+  seat('4A', 'A'); blk('A', '4', [{ id: '4A', c: L1 }]);
+  blk('A', 'Monitor', [{ id: 'MON-A3', c: L1 }]);
 
   zone('B', 'VIP OB (6 Seats)', 'VIP OB');
   mon('MON-B1', 'B', 'w27', 'หน้าที่นั่ง 5A', 'หน้า 5A');
   mon('MON-B2', 'B', 'w27', 'หน้าที่นั่ง 5D, 5F', 'หน้า 5D-5F');
   mon('MON-B3', 'B', 'w27', 'หลังที่นั่ง 6A', 'หลัง 6A');
   mon('MON-B4', 'B', 'w27', 'หลังที่นั่ง 6D, 6F', 'หลัง 6D-6F');
-  blk('B', 'Monitor', [{ id: 'MON-B1', c: C1 }, { id: 'MON-B2', c: R1, span: 4 }]);
-  seat('5A', 'B'); seat('5D', 'B'); seat('5F', 'B'); blk('B', '5', [{ id: '5A', c: C1 }, { id: '5D', c: R1 }, { id: '5F', c: R2 }]);
-  blk('B', '', [{ text: 'TABLE', c: C1 }, { text: 'TABLE', c: R1, span: 4 }]);
-  seat('6A', 'B'); seat('6D', 'B'); seat('6F', 'B'); blk('B', '6', [{ id: '6A', c: C1 }, { id: '6D', c: R1 }, { id: '6F', c: R2 }]);
-  blk('B', 'Monitor', [{ id: 'MON-B3', c: C1 }, { id: 'MON-B4', c: R1, span: 4 }]);
+  blk('B', 'Monitor', [{ id: 'MON-B1', c: L1 }, { id: 'MON-B2', c: R2S, span: 4 }]);
+  seat('5A', 'B'); seat('5D', 'B'); seat('5F', 'B'); blk('B', '5', [{ id: '5A', c: L1 }, { id: '5D', c: R2S }, { id: '5F', c: R2S + 2 }]);
+  blk('B', '', [{ text: 'TABLE', c: L1 }, { text: 'TABLE', c: R2S, span: 4 }]);
+  seat('6A', 'B'); seat('6D', 'B'); seat('6F', 'B'); blk('B', '6', [{ id: '6A', c: L1 }, { id: '6D', c: R2S }, { id: '6F', c: R2S + 2 }]);
+  blk('B', 'Monitor', [{ id: 'MON-B3', c: L1 }, { id: 'MON-B4', c: R2S, span: 4 }]);
 
   zone('C', 'VIP OC · Business Class (8 Seats)', 'VIP OC');
   mon('MON-C1', 'C', 'w21', 'หน้าที่นั่ง 7B, 7C', 'หน้า 7B-7C');
   mon('MON-C2', 'C', 'w21', 'หน้าที่นั่ง 7D, 7F', 'หน้า 7D-7F');
-  blk('C', 'Monitor', [{ id: 'MON-C1', c: C1, span: 4 }, { id: 'MON-C2', c: R1, span: 4 }]);
+  blk('C', 'Monitor', [{ id: 'MON-C1', c: L2, span: 4 }, { id: 'MON-C2', c: R2S, span: 4 }]);
   [7, 8].forEach(function (n) {
     ['B', 'C', 'D', 'F'].forEach(function (x) { seat(n + x, 'C'); });
-    blk('C', String(n), [{ id: n + 'B', c: C1 }, { id: n + 'C', c: C2 }, { id: n + 'D', c: R1 }, { id: n + 'F', c: R2 }]);
+    blk('C', String(n), [{ id: n + 'B', c: L2 }, { id: n + 'C', c: L2 + 2 }, { id: n + 'D', c: R2S }, { id: n + 'F', c: R2S + 2 }]);
   });
 
   zone('D', 'Passenger OD · Economy Class (54 Seats)', 'ECONOMY');
@@ -159,6 +163,12 @@ function planSheet(L) {
       curZone = b.zone; zoneStart = r; r++;
       return;
     }
+    if (b.t === 'title') {
+      op({ r: r, c: b.c, cs: b.span, v: b.text, font: { b: true, sz: 9, color: C.MUTED }, align: mid, border: false });
+      if (roomTop === null) roomTop = r;
+      heights[r] = 22; r++;
+      return;
+    }
     var isMonRow = b.b === 'Monitor' || b.b === 'OVHD', isNum = /^\d+$/.test(b.b);
     if (b.b) op(isNum ? { r: r, c: 2, v: b.b, fill: C.ROWNO, font: { b: true, sz: 10, color: '#FFFFFF' }, align: mid, border: true }
                       : { r: r, c: 2, v: b.b, font: { b: true, sz: 7, color: C.MUTED }, align: { h: 'right', v: 'middle' }, border: false });
@@ -180,8 +190,7 @@ function planSheet(L) {
   closeZone();
   var LAST = r - 1;
   if (roomTop !== null) {
-    op({ r: roomTop, c: 7, rs: roomBot - roomTop + 1, cs: 2, v: 'ห้อง Commander Center', font: { b: true, sz: 8, color: C.MUTED }, align: mid, border: false });
-    boxes.push({ r1: roomTop - 1, c1: 3, r2: roomBot + 1, c2: 8 });
+    boxes.push({ r1: roomTop, c1: 3, r2: roomBot, c2: 8 });
   }
 
   /* summary formulas; q tells the Excel export how to fill in the cached result */
@@ -297,14 +306,20 @@ function buildMap_(sh) {
   const width = Math.max(sh.getLastColumn(), 15);
   const v = sh.getRange(1, 1, last + 2, width).getDisplayValues();
   const cell = function (r, c) { return (r >= 1 && r <= v.length && c >= 1 && c <= width) ? String(v[r - 1][c - 1]).trim() : ''; };
+  // ชื่อเดียวกัน (เช่น จอ Monitor 27" หลายจอ) จับคู่ตามลำดับในผัง: ซ้ายไปขวา บนลงล่าง
   const byLabel = {};
-  LAYOUT.order.forEach(function (id) { byLabel[LAYOUT.items[id].label] = id; });
+  LAYOUT.order.forEach(function (id) {
+    const it = LAYOUT.items[id];
+    [it.label, it.alias].forEach(function (t) { if (t) (byLabel[t] = byLabel[t] || []).push(id); });
+  });
   const items = {};
   for (let r = FIRST_MAP_ROW; r <= last; r++) {
     if (cell(r, 2) === 'NOTE') continue;
     for (let c = 3; c <= width; c++) {
-      const id = byLabel[cell(r, c)];
-      if (!id || items[id]) continue;
+      const cands = byLabel[cell(r, c)];
+      if (!cands) continue;
+      const id = cands.filter(function (x) { return !items[x]; })[0];
+      if (!id) continue;
       const it = LAYOUT.items[id];
       const st = cell(r + 1, c), list = it.kind === 'mon' ? SEAT_M : SEAT_S;
       if (st !== '' && list.indexOf(st) < 0) continue;
