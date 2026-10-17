@@ -197,8 +197,8 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .op1 .sum{table-layout:fixed}
 .report.op1 .sum th,.report.op1 .sum td{font-size:9px;padding:2px 2px;border:1px solid var(--line);text-align:center;overflow:hidden;line-height:1.25}
 .report.op1 .sum th{background:#eef2f6;font-weight:700;color:var(--ink)}
-.report.op1 .sum th:first-child{width:31%}
-.report.op1 .sum.mt th:first-child{width:52%}
+.report.op1 .sum th:first-child{width:24%}
+.report.op1 .sum.mt th:first-child{width:50%}
 .report.op1 .sum td:first-child,.report.op1 .sum th:first-child{text-align:left}
 .report.op1 .sum th i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:2px}
 .report.op1 .sum tr:last-child td{font-weight:700;background:#eef2f6}
@@ -238,11 +238,12 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .op1 .hroom{border:1.5px solid var(--rowno);border-radius:6px;align-self:stretch;justify-self:stretch;margin:-3px -3px;z-index:0}
 .op1 .hroomname{font-size:7.5px;font-weight:600;color:var(--rowno);white-space:nowrap;line-height:12px}
 .op1 .hg>*:not(.hroom){z-index:1}
-.op1 .hbelow{display:grid;grid-template-columns:1.25fr 1fr 0.9fr;gap:14px;align-items:start}
+.op1 .hbelow{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+.op1 .hleg{display:flex;flex-wrap:wrap;justify-content:center;gap:3px 18px;font-size:10px;color:var(--muted);padding:5px 8px;border:1px solid var(--line);border-radius:5px}
+.op1 .hleg i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px}
 .op1 .hbelow .leg{font-size:9.5px}
 .report.op1.pg1h .sum th,.report.op1.pg1h .sum td{font-size:10.5px;padding:3px 3px}
 .op1.pg1h h3{font-size:13px;margin:4px 0 5px}
-.op1.pg1h .hbelow .leg{font-size:10.5px;gap:4px}
 .op1.pg1h .defsnote{font-size:12px;margin-top:8px}
 .op1 .noseh{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin:-2px 2px 0}
 @media (max-width:600px){.bar{padding-block:8px;gap:6px 10px}.bar .sync{display:none}.tools .btn{padding:6px 9px;font-size:12px}.who input{width:130px}}
@@ -897,22 +898,23 @@ function mapPageH(nDef){
   var r=el('div','report op1 pg pg1h');r.appendChild(pgTop('รายงานสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร'));
   var nose=el('div','noseh');nose.appendChild(el('span',null,'◀ หัวเครื่อง (NOSE)'));nose.appendChild(el('span',null,'ด้านบน = ที่นั่งฝั่งขวา (D-F) · ด้านล่าง = ฝั่งซ้าย (A-C)'));nose.appendChild(el('span',null,'ท้ายเครื่อง (TAIL) ▶'));r.appendChild(nose);
   var map=el('div','hmap');ZONES.forEach(function(z){map.appendChild(hZone(z))});r.appendChild(map);
-  var below=el('div','hbelow');
-  var sb=el('div');sb.appendChild(el('h3',null,'สรุปตามโซน'));var t=el('table','sum');t.innerHTML=summaryHTML();sb.appendChild(t);below.appendChild(sb);
-  var mb=el('div');mb.appendChild(el('h3',null,'สรุปตามชนิด Monitor'));var t2=el('table','sum mt');t2.innerHTML=mtHTML();mb.appendChild(t2);below.appendChild(mb);
-  var lb=el('div'),lg=el('div','leg');lb.appendChild(el('h3',null,'สัญลักษณ์'));
+  /* legend as one line under the map, so the two tables below get the full width */
+  var lg=el('div','hleg');
   legItem(lg,'background:var(--ok)','ใช้งานได้ปกติ');
   legItem(lg,'background:var(--warn)','ขัดข้องแต่ใช้ได้ / Manual ได้ (!) · จอเสื่อมสภาพ');
   legItem(lg,'background:var(--bad)','ใช้งานไม่ได้ (×) · จอเสีย');
-  legItem(lg,'background:var(--mon21);width:6px;height:14px;vertical-align:-3px','Monitor 21.5" (Wall Mounted)');
-  legItem(lg,'background:var(--mon27);width:6px;height:14px;vertical-align:-3px','Monitor 27" (Wall Mounted)');
-  legItem(lg,'background:var(--monb);width:5px;height:14px;vertical-align:-3px','OVHD Monitor 12"');
+  legItem(lg,'background:var(--mon21);width:6px;height:13px;vertical-align:-3px','Monitor 21.5"');
+  legItem(lg,'background:var(--mon27);width:6px;height:13px;vertical-align:-3px','Monitor 27"');
+  legItem(lg,'background:var(--monb);width:5px;height:13px;vertical-align:-3px','OVHD Monitor 12"');
   legItem(lg,'background:var(--ok);border-bottom:3px solid var(--ink);box-sizing:border-box','ขีดล่าง = มีหมายเหตุ');
-  lb.appendChild(lg);
+  r.appendChild(lg);
+  var below=el('div','hbelow');
+  var sb=el('div');sb.appendChild(el('h3',null,'สรุปตามโซน'));var t=el('table','sum');t.innerHTML=summaryHTML();sb.appendChild(t);below.appendChild(sb);
+  var mb=el('div');mb.appendChild(el('h3',null,'สรุปตามชนิด Monitor'));var t2=el('table','sum mt');t2.innerHTML=mtHTML();mb.appendChild(t2);
   var note=el('p','defsnote');
   if(nDef){note.appendChild(el('b',null,'รวมข้อขัดข้องคงค้าง '+nDef+' รายการ'));note.appendChild(document.createTextNode(' · รายละเอียดอยู่หน้า 2'))}
   else note.appendChild(el('b',null,'ไม่มีข้อขัดข้องคงค้าง'));
-  lb.appendChild(note);below.appendChild(lb);r.appendChild(below);
+  mb.appendChild(note);below.appendChild(mb);r.appendChild(below);
   r.appendChild(el('div','fill'));r.appendChild(pgFoot());return r;
 }
 function defRows(){
