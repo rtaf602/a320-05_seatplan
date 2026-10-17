@@ -6,7 +6,7 @@
 
 | ไฟล์ | หน้าที่ |
 |---|---|
-| `index.html` | หน้าเว็บ (ผังที่นั่ง, ปุ่ม CLEAR / PREVIEW / SAVE / EXPORT TO PDF / EXPORT TO EXCEL) |
+| `index.html` | หน้าเว็บ (ผังที่นั่ง, ปุ่ม CLEAR / PREVIEW / SAVE / EXPORT TO PDF / EXPORT TO PDF A4 2PAGE / EXPORT TO EXCEL) |
 | `layout.js` | ผังที่นั่งในชีท (ตำแหน่งช่อง, ชื่อที่นั่ง/จอ, สูตรสรุป) ใช้ร่วมกันระหว่าง EXPORT TO EXCEL และ Apps Script |
 | `export-excel.js` | สร้างไฟล์ EXPORT TO EXCEL 4 แผ่นงาน: ผังที่นั่ง, รวมข้อขัดข้องคงค้าง, ทุกที่นั่ง และ Monitor, ประวัติการแก้ไข |
 | `config.js` | ใส่ URL ของ Apps Script Web App |

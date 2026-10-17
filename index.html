@@ -184,6 +184,67 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .report .rdef tr:last-child td{font-weight:400}
 .report .rnote{font-size:12px;color:var(--muted);margin:6px 0 0}
 .offscreen{position:fixed;left:-10000px;top:0}
+/* EXPORT TO PDF A4 2PAGE: landscape A4 pages 1070x741px (= 283x196mm). Page 1 long seat map + summaries, next pages outstanding defects */
+.report.op1{width:1070px;padding:0;gap:9px;--cabin:#f3f6f9}
+.report.op1.pg{height:741px;overflow:hidden}
+.op1 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:2px solid var(--accent);padding-bottom:6px}
+.op1 .top h1{font-size:19px;margin:0;letter-spacing:.5px}
+.op1 .top .sub{font-size:10.5px;color:var(--muted)}
+.op1 .meta{display:grid;grid-template-columns:auto auto;gap:1px 12px;font-size:11px;text-align:left}
+.op1 .meta b{font-weight:700}
+.op1 h3{font-size:12px;margin:0 0 4px}
+.report.op1 table{border-collapse:collapse;width:100%;min-width:0}
+.op1 .sum{table-layout:fixed}
+.report.op1 .sum th,.report.op1 .sum td{font-size:9px;padding:2px 2px;border:1px solid var(--line);text-align:center;overflow:hidden;line-height:1.25}
+.report.op1 .sum th{background:#eef2f6;font-weight:700;color:var(--ink)}
+.report.op1 .sum th:first-child{width:31%}
+.report.op1 .sum.mt th:first-child{width:52%}
+.report.op1 .sum td:first-child,.report.op1 .sum th:first-child{text-align:left}
+.report.op1 .sum th i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:2px}
+.report.op1 .sum tr:last-child td{font-weight:700;background:#eef2f6}
+.report.op1 .sum .sep{border-left:1px solid var(--line)}
+.op1 .leg{display:flex;flex-direction:column;gap:2px;font-size:9.5px;color:var(--muted)}
+.op1 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+.op1 .leg i.mon{width:18px;height:7px;vertical-align:0}
+.op1 .defsnote{font-size:11px;margin:2px 0 0;padding:6px 8px;background:#eef2f6;border-radius:4px}
+.report.op1 .def th,.report.op1 .def td{font-size:10px;padding:1.5px 5px;border:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.35;font-weight:400}
+.report.op1 .def th{background:#eef2f6;font-weight:700}
+.op1 .def td.n{text-align:center;color:var(--muted)}
+.report.op1 .def td.id{font-weight:700}
+.op1 .def td.nw{white-space:nowrap}
+.op1 .def td.w{background:var(--warn-soft)} .op1 .def td.b{background:var(--bad-soft)}
+.op1 .fill{flex:1}
+.op1 .foot{display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:4px}
+/* A4 2PAGE, long layout: cabin drawn nose (left) to tail (right); D-F on top, A-C below the aisle; tables underneath */
+.op1 .hmap{display:flex;gap:7px;justify-content:center;align-items:stretch;--hw:31px;--hg:3px}
+.op1 .hz{border:1px solid var(--line);background:var(--cabin);border-radius:6px;padding:5px 6px 6px;display:flex;flex-direction:column;gap:3px}
+.op1 .hz header{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.op1 .hz h2{font-size:11px;margin:0;white-space:nowrap}
+.op1 .hz header span{font-family:var(--mono);font-size:7.5px;font-weight:600;background:var(--accent);color:var(--accent-ink);padding:1px 4px;border-radius:3px;white-space:nowrap}
+.op1 .hg{display:grid;column-gap:4px;row-gap:0;align-items:center;justify-items:center;margin:0 auto}
+.op1 .hno{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--rowno);height:14px;line-height:14px}
+.op1 .hband{height:calc(3 * var(--hw) + 2 * var(--hg));display:flex;flex-direction:column;justify-content:center;align-items:center;gap:var(--hg)}
+.op1 .haisle{height:12px}
+.op1 .hs{width:var(--hw);height:var(--hw);border-radius:4px;background:var(--ok);color:var(--on-status);font-family:var(--mono);font-weight:600;font-size:10px;display:flex;align-items:center;justify-content:center;position:relative;white-space:nowrap}
+.op1 .hs.wide{height:calc(2 * var(--hw) + var(--hg));font-family:var(--sans);font-size:8px;line-height:1.1;text-align:center;white-space:normal}
+.op1 .hs[data-s="1"]{background:var(--warn)} .op1 .hs[data-s="2"]{background:var(--bad)}
+.op1 .hs[data-s="1"]::after{content:"!"} .op1 .hs[data-s="2"]::after{content:"×"}
+.op1 .hs[data-note]::before{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ink);border-radius:0 0 4px 4px}
+.op1 .hm{width:11px;height:calc(3 * var(--hw) + 2 * var(--hg) - 8px);border-radius:4px;position:relative}
+.op1 .hm.t-w21{background:var(--mon21)} .op1 .hm.t-w27{background:var(--mon27)} .op1 .hm.t-b12{background:var(--monb);width:8px}
+.op1 .hm[data-m="1"]{background:var(--warn)} .op1 .hm[data-m="2"]{background:var(--bad)}
+.op1 .hm[data-note]::before{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ink);border-radius:0 0 4px 4px}
+.op1 .htbl{width:var(--hw);height:calc(2 * var(--hw) + var(--hg));border:1.5px dashed var(--muted);border-radius:4px;background:var(--panel);color:var(--muted);font-size:6.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.op1 .hroom{border:1.5px solid var(--rowno);border-radius:6px;align-self:stretch;justify-self:stretch;margin:-3px -3px;z-index:0}
+.op1 .hroomname{font-size:7.5px;font-weight:600;color:var(--rowno);white-space:nowrap;line-height:12px}
+.op1 .hg>*:not(.hroom){z-index:1}
+.op1 .hbelow{display:grid;grid-template-columns:1.25fr 1fr 0.9fr;gap:14px;align-items:start}
+.op1 .hbelow .leg{font-size:9.5px}
+.report.op1.pg1h .sum th,.report.op1.pg1h .sum td{font-size:10.5px;padding:3px 3px}
+.op1.pg1h h3{font-size:13px;margin:4px 0 5px}
+.op1.pg1h .hbelow .leg{font-size:10.5px;gap:4px}
+.op1.pg1h .defsnote{font-size:12px;margin-top:8px}
+.op1 .noseh{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin:-2px 2px 0}
 @media (max-width:600px){.bar{padding-block:8px;gap:6px 10px}.bar .sync{display:none}.tools .btn{padding:6px 9px;font-size:12px}.who input{width:130px}}
 @media print{.bar,.foot,.notice{display:none}}
 .sheetlink{color:var(--accent);font-weight:600;text-decoration:none}
@@ -208,6 +269,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
       <button class="btn" id="bPreview" type="button">PREVIEW</button>
       <button class="btn pri" id="bSave" type="button">SAVE</button>
       <button class="btn" id="bPdf" type="button">EXPORT TO PDF</button>
+      <button class="btn" id="bPdf2" type="button">EXPORT TO PDF A4 2PAGE</button>
       <button class="btn" id="bXls" type="button">EXPORT TO EXCEL</button>
     </div>
     <div class="status"><span class="pend" id="pend"></span><span id="lastSave"></span></div>
@@ -782,6 +844,133 @@ function exportPdf(){
   .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
   .then(function(){wrap.remove();busy=false});
 }
+/* ---------- EXPORT TO PDF A4 2PAGE ---------- */
+function thLT(at){if(!at)return '-';var d=new Date(at);if(isNaN(d))return '-';var t=new Date(d.getTime()+7*3600e3),p=function(n){return String(n).padStart(2,'0')};
+  return p(t.getUTCDate())+' '+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][t.getUTCMonth()]+p(t.getUTCFullYear()%100)+' ('+p(t.getUTCHours())+':'+p(t.getUTCMinutes())+' TH-LT)'}
+function pgTop(sub){
+  var top=el('div','top'),tl=el('div');tl.appendChild(el('h1',null,'STATUS SEAT PLAN '+AC));tl.appendChild(el('div','sub',sub));top.appendChild(tl);
+  var meta=el('div','meta');
+  [['ผู้ตรวจ',who.value.trim()||'-'],['SAVE ล่าสุด',lastSave&&lastSave.at?thLT(lastSave.at)+(lastSave.by?' · '+lastSave.by:''):'ยังไม่เคย SAVE'],['ออกรายงาน',thLT(new Date().toISOString())]]
+    .forEach(function(x){meta.appendChild(el('span',null,x[0]));meta.appendChild(el('b',null,x[1]))});
+  top.appendChild(meta);return top;
+}
+function pgFoot(){var f=el('div','foot');f.appendChild(el('span',null,'ข้อมูลจาก SAVE ล่าสุดใน Google Sheet'));f.appendChild(el('span','pgno',''));return f}
+function legItem(host,css,text,cls){var s=el('span'),i=el('i',cls||null);i.style.cssText=css;s.appendChild(i);s.appendChild(document.createTextNode(text));host.appendChild(s)}
+/* page 1, long layout: one horizontal cabin strip, tables and legend underneath */
+function hCols(z){
+  var cols=[],no=function(ids){var m=String(ids.filter(Boolean)[0]||'').match(/^\d+/);return m?m[0]:''},rev=function(a){return (a||[]).slice().reverse()};
+  z.lines.forEach(function(ln){
+    if(ln.room){cols.push({k:'mon',top:[ln.R.mon],bot:[ln.room.mon],room:true});cols.push({k:'seat',no:no(ln.R.seats),top:rev(ln.R.seats),bot:rev(ln.room.seats),room:true});return}
+    if(ln.mon){cols.push({k:'mon',top:ln.mon[1]?[ln.mon[1]]:[],bot:ln.mon[0]?[ln.mon[0]]:[]});return}
+    if(ln.tables){cols.push({k:'seat',top:['#T'],bot:['#T']});return}
+    if(ln.L2){ln.L2.forEach(function(id,i){cols.push(id==='#TABLE'?{k:'seat',no:no(ln.R2),top:rev(ln.R2),bot:['#T']}:{k:'seat',no:no([id]),top:i===1?rev(ln.R2):[],bot:[id]})});return}
+    cols.push({k:'seat',no:no((ln.L||[]).concat(ln.R||[])),top:rev(ln.R),bot:rev(ln.L)});
+  });
+  return cols;
+}
+function hCell(ids,k){
+  var band=el('div','hband');
+  ids.forEach(function(id){
+    if(id==='#T'){band.appendChild(el('div','htbl','TABLE'));return}
+    var it=ITEMS[id],d=get(id),x;
+    if(k==='mon'){x=el('div','hm t-'+MTYPE[id]);if(d.m)x.dataset.m=d.m}
+    else{x=el('div','hs'+(WIDE[id]?' wide':''),SEAT_NAME[id]?'CC 1A':id);if(d.s)x.dataset.s=d.s}
+    if(d.note)x.dataset.note='1';band.appendChild(x);
+  });
+  return band;
+}
+function hZone(z){
+  var box=el('div','hz'),h=el('header');h.appendChild(el('h2',null,z.title));h.appendChild(el('span',null,z.tag));box.appendChild(h);
+  var cols=hCols(z),g=el('div','hg');
+  g.style.gridTemplateColumns=cols.map(function(c){return c.k==='mon'?'14px':'var(--hw)'}).join(' ');
+  g.style.gridTemplateRows='14px auto 12px auto'+(cols.some(function(c){return c.room})?' 12px':'');
+  cols.forEach(function(c,i){
+    var col=i+1,put=function(node,row){node.style.gridColumn=String(col);node.style.gridRow=String(row);g.appendChild(node)};
+    put(el('div','hno',c.no||''),1);put(hCell(c.top,c.k),2);put(el('div','haisle'),3);put(hCell(c.bot,c.k),4);
+  });
+  var rc=cols.map(function(c,i){return c.room?i+1:0}).filter(Boolean);
+  if(rc.length){var fr=el('div','hroom');fr.style.gridColumn=rc[0]+' / '+(rc[rc.length-1]+1);fr.style.gridRow='4';g.appendChild(fr);
+    var nm=el('div','hroomname','ห้อง Commander Center');nm.style.gridColumn=rc[0]+' / '+(rc[rc.length-1]+1);nm.style.gridRow='5';g.appendChild(nm)}
+  box.appendChild(g);return box;
+}
+function mapPageH(nDef){
+  var r=el('div','report op1 pg pg1h');r.appendChild(pgTop('รายงานสภาพที่นั่งและ Monitor · ฝ่ายการช่าง / ฝ่ายสื่อสาร'));
+  var nose=el('div','noseh');nose.appendChild(el('span',null,'◀ หัวเครื่อง (NOSE)'));nose.appendChild(el('span',null,'ด้านบน = ที่นั่งฝั่งขวา (D-F) · ด้านล่าง = ฝั่งซ้าย (A-C)'));nose.appendChild(el('span',null,'ท้ายเครื่อง (TAIL) ▶'));r.appendChild(nose);
+  var map=el('div','hmap');ZONES.forEach(function(z){map.appendChild(hZone(z))});r.appendChild(map);
+  var below=el('div','hbelow');
+  var sb=el('div');sb.appendChild(el('h3',null,'สรุปตามโซน'));var t=el('table','sum');t.innerHTML=summaryHTML();sb.appendChild(t);below.appendChild(sb);
+  var mb=el('div');mb.appendChild(el('h3',null,'สรุปตามชนิด Monitor'));var t2=el('table','sum mt');t2.innerHTML=mtHTML();mb.appendChild(t2);below.appendChild(mb);
+  var lb=el('div'),lg=el('div','leg');lb.appendChild(el('h3',null,'สัญลักษณ์'));
+  legItem(lg,'background:var(--ok)','ใช้งานได้ปกติ');
+  legItem(lg,'background:var(--warn)','ขัดข้องแต่ใช้ได้ / Manual ได้ (!) · จอเสื่อมสภาพ');
+  legItem(lg,'background:var(--bad)','ใช้งานไม่ได้ (×) · จอเสีย');
+  legItem(lg,'background:var(--mon21);width:6px;height:14px;vertical-align:-3px','Monitor 21.5" (Wall Mounted)');
+  legItem(lg,'background:var(--mon27);width:6px;height:14px;vertical-align:-3px','Monitor 27" (Wall Mounted)');
+  legItem(lg,'background:var(--monb);width:5px;height:14px;vertical-align:-3px','OVHD Monitor 12"');
+  legItem(lg,'background:var(--ok);border-bottom:3px solid var(--ink);box-sizing:border-box','ขีดล่าง = มีหมายเหตุ');
+  lb.appendChild(lg);
+  var note=el('p','defsnote');
+  if(nDef){note.appendChild(el('b',null,'รวมข้อขัดข้องคงค้าง '+nDef+' รายการ'));note.appendChild(document.createTextNode(' · รายละเอียดอยู่หน้า 2'))}
+  else note.appendChild(el('b',null,'ไม่มีข้อขัดข้องคงค้าง'));
+  lb.appendChild(note);below.appendChild(lb);r.appendChild(below);
+  r.appendChild(el('div','fill'));r.appendChild(pgFoot());return r;
+}
+function defRows(){
+  var SS=['ปกติ','ขัดข้อง-ใช้ได้','ใช้ไม่ได้'],MM=['ปกติ','เสื่อม','เสีย'];
+  return defectIds().map(function(id,k){var d=get(id),it=ITEMS[id],tr=el('tr');
+    tr.appendChild(el('td','n',String(k+1)));
+    tr.appendChild(el('td','id',(id.indexOf('MON-')===0||SEAT_NAME[id])?it.label:id));
+    tr.appendChild(el('td','nw',zoneName(it.zone)));
+    tr.appendChild(el('td','nw'+(it.seat&&d.s?(d.s===1?' w':' b'):''),it.seat?SS[d.s]:'-'));
+    tr.appendChild(el('td','nw'+(it.mon&&d.m?(d.m===1?' w':' b'):''),it.mon?MM[d.m]:'-'));
+    tr.appendChild(el('td',null,d.note||'-'));
+    tr.appendChild(el('td','nw',[d.by,d.at?thLT(d.at).replace(' TH-LT',''):''].filter(Boolean).join(' · ')||'-'));
+    return tr});
+}
+function defPage(total){
+  var r=el('div','report op1 pg pgd');r.appendChild(pgTop('รวมข้อขัดข้องคงค้าง · ต่อจากหน้า 1'));
+  var ds=el('div');ds.appendChild(el('h3',null,'รวมข้อขัดข้องคงค้าง ('+total+' รายการ)'));
+  var dt=el('table','def'),hr=el('tr');
+  ['#','ที่นั่ง / จุด','โซน','ที่นั่ง','Monitor','หมายเหตุ','ผู้บันทึก · เวลา'].forEach(function(x){hr.appendChild(el('th',null,x))});
+  var th=el('thead');th.appendChild(hr);dt.appendChild(th);var tb=el('tbody');dt.appendChild(tb);ds.appendChild(dt);r.appendChild(ds);
+  r.appendChild(el('div','fill'));r.appendChild(pgFoot());r._tb=tb;return r;
+}
+/* builds every page inside host (must be in the DOM so rows can be measured) */
+function buildPages(host){
+  var rows=defRows(),pages=[mapPageH(rows.length)];host.appendChild(pages[0]);
+  var i=0;
+  while(i<rows.length){
+    var pg=defPage(rows.length);host.appendChild(pg);pages.push(pg);
+    var fill=pg.querySelector('.fill'),placed=0;
+    while(i<rows.length){
+      pg._tb.appendChild(rows[i]);
+      if(fill.getBoundingClientRect().height<1&&placed>0){pg._tb.removeChild(rows[i]);break} /* page full: move this row to the next page */
+      placed++;i++;
+    }
+  }
+  pages.forEach(function(p,k){p.querySelector('.pgno').textContent='STATUS SEAT PLAN '+AC+' · หน้า '+(k+1)+'/'+pages.length});
+  return pages;
+}
+function exportPdf2(){
+  if(busy)return;busy=true;toast('กำลังสร้าง PDF A4…'+exportNote());
+  var wrap=el('div','offscreen'),pages;document.body.appendChild(wrap);
+  Promise.all([loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),document.fonts?document.fonts.ready:null])
+  .then(function(){
+    useSaved=true;try{pages=buildPages(wrap)}finally{useSaved=false}
+    return pages.reduce(function(p,pg){return p.then(function(arr){return html2canvas(pg,{scale:2,backgroundColor:'#ffffff',logging:false}).then(function(cv){arr.push(cv);return arr})})},Promise.resolve([]));
+  })
+  .then(function(cvs){
+    var pdf=new window.jspdf.jsPDF({orientation:'l',unit:'mm',format:'a4'});
+    var M=7,W=297-2*M,H=210-2*M;
+    cvs.forEach(function(cv,k){if(k)pdf.addPage();var w=W,h=cv.height*W/cv.width;if(h>H){w=w*H/h;h=H}
+      pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',M+(W-w)/2,M,w,h)});
+    return offerFile('A4 2P '+FILE+stamp()+'.pdf',pdf.output('arraybuffer'),'application/pdf');
+  })
+  .catch(function(){toast('สร้าง PDF ไม่สำเร็จ ลองอีกครั้ง',true)})
+  .then(function(){wrap.remove();busy=false});
+}
+$('bPdf2').addEventListener('click',function(){guard('EXPORT TO PDF A4 2PAGE',exportPdf2)});
+
 function exportXlsx(){
   if(busy)return;busy=true;toast('กำลังสร้าง Excel…'+exportNote());
   /* history comes from the Google Sheet; an older Apps Script without it still exports the other sheets */
