@@ -236,7 +236,7 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .op1 .hm[data-note]::before{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ink);border-radius:0 0 4px 4px}
 .op1 .htbl{width:var(--hw);height:calc(2 * var(--hw) + var(--hg));border:1.5px dashed var(--muted);border-radius:4px;background:var(--panel);color:var(--muted);font-size:6.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .op1 .hroom{border:1.5px solid var(--rowno);border-radius:6px;align-self:stretch;justify-self:stretch;margin:-3px -3px;z-index:0}
-.op1 .hroomname{font-size:7.5px;font-weight:600;color:var(--rowno);white-space:nowrap;line-height:12px}
+.op1 .hroomname{font-size:7.5px;font-weight:600;color:var(--rowno);white-space:nowrap;line-height:12px;align-self:end}
 .op1 .hg>*:not(.hroom){z-index:1}
 .op1 .hbelow{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
 .op1 .hleg{display:flex;flex-wrap:wrap;justify-content:center;gap:3px 18px;font-size:10px;color:var(--muted);padding:5px 8px;border:1px solid var(--line);border-radius:5px}
@@ -884,7 +884,7 @@ function hZone(z){
   var box=el('div','hz'),h=el('header');h.appendChild(el('h2',null,z.title));h.appendChild(el('span',null,z.tag));box.appendChild(h);
   var cols=hCols(z),g=el('div','hg');
   g.style.gridTemplateColumns=cols.map(function(c){return c.k==='mon'?'14px':'var(--hw)'}).join(' ');
-  g.style.gridTemplateRows='14px auto 12px auto'+(cols.some(function(c){return c.room})?' 12px':'');
+  g.style.gridTemplateRows='14px auto 12px auto'+(cols.some(function(c){return c.room})?' 21px':'');
   cols.forEach(function(c,i){
     var col=i+1,put=function(node,row){node.style.gridColumn=String(col);node.style.gridRow=String(row);g.appendChild(node)};
     put(el('div','hno',c.no||''),1);put(hCell(c.top,c.k),2);put(el('div','haisle'),3);put(hCell(c.bot,c.k),4);
