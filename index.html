@@ -230,7 +230,8 @@ dialog.wide[open]{display:flex;flex-direction:column}
 .op1 .hs[data-s="1"]{background:var(--warn)} .op1 .hs[data-s="2"]{background:var(--bad)}
 .op1 .hs[data-s="1"]::after{content:"!"} .op1 .hs[data-s="2"]::after{content:"×"}
 .op1 .hs[data-note]::before{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ink);border-radius:0 0 4px 4px}
-.op1 .hm{width:11px;height:calc(3 * var(--hw) + 2 * var(--hg) - 8px);border-radius:4px;position:relative}
+.op1 .hm{width:11px;border-radius:4px;position:relative}
+.op1 .hs.cc{font-family:var(--sans);font-size:8px}
 .op1 .hm.t-w21{background:var(--mon21)} .op1 .hm.t-w27{background:var(--mon27)} .op1 .hm.t-b12{background:var(--monb);width:8px}
 .op1 .hm[data-m="1"]{background:var(--warn)} .op1 .hm[data-m="2"]{background:var(--bad)}
 .op1 .hm[data-note]::before{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ink);border-radius:0 0 4px 4px}
@@ -874,8 +875,11 @@ function hCell(ids,k){
   ids.forEach(function(id){
     if(id==='#T'){band.appendChild(el('div','htbl','TABLE'));return}
     var it=ITEMS[id],d=get(id),x;
-    if(k==='mon'){x=el('div','hm t-'+MTYPE[id]);if(d.m)x.dataset.m=d.m}
-    else{x=el('div','hs'+(WIDE[id]?' wide':''),SEAT_NAME[id]?'CC 1A':id);if(d.s)x.dataset.s=d.s}
+    if(k==='mon'){x=el('div','hm t-'+MTYPE[id]);if(d.m)x.dataset.m=d.m;
+      /* bar as long as the seats it serves on that side (from its name, e.g. "หน้าที่นั่ง 3D, 3F" = 2) */
+      var n=Math.max(1,(it.label.split('ที่นั่ง ')[1]||'').split(',').length);
+      x.style.height='calc('+n+' * var(--hw) + '+(n-1)+' * var(--hg))'}
+    else{x=el('div','hs'+(SEAT_NAME[id]?' cc':''),SEAT_NAME[id]?'CC 1A':id);if(d.s)x.dataset.s=d.s}
     if(d.note)x.dataset.note='1';band.appendChild(x);
   });
   return band;
