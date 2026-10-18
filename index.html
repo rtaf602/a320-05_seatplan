@@ -155,6 +155,12 @@ dialog.wide{width:min(900px,calc(100vw - 24px));padding:0;max-height:calc(100vh 
 dialog.wide[open]{display:flex;flex-direction:column}
 .pvbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
 .pvbar h3{margin:0}
+.pvhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.pvmode{display:inline-flex;border:1px solid var(--accent);border-radius:7px;overflow:hidden}
+.pvmode button{border:0;background:var(--panel);color:var(--accent);font:inherit;font-size:13px;font-weight:600;padding:7px 12px;cursor:pointer}
+.pvmode button+button{border-left:1px solid var(--accent)}
+.pvmode button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.pva4{margin:0 auto 12px;box-shadow:0 1px 4px rgba(0,0,0,.25);overflow:hidden;background:#fff;position:relative}
 .pvbody{overflow:auto;padding:14px;background:var(--line)}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;max-width:calc(100vw - 32px);transition:opacity .2s,transform .2s;z-index:50}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -346,8 +352,9 @@ dialog.wide[open]{display:flex;flex-direction:column}
 
 <dialog id="pv" class="wide">
   <div class="pvbar">
-    <h3>PREVIEW รายงาน</h3>
-    <div class="acts"><button class="btn" id="pvClose" type="button">ปิด</button><button class="btn" id="pvPdf" type="button">EXPORT TO PDF</button><button class="btn" id="pvXls" type="button">EXPORT TO EXCEL</button><button class="btn pri" id="pvSave" type="button">SAVE</button></div>
+    <div class="pvhead"><h3 id="pvTitle">PREVIEW</h3>
+      <div class="pvmode" role="group" aria-label="แบบที่ดูตัวอย่าง"><button type="button" id="pvModeStd" aria-pressed="true">แบบ EXPORT TO PDF</button><button type="button" id="pvModeA4" aria-pressed="false">แบบ EXPORT TO PDF A4 2PAGE</button></div></div>
+    <div class="acts"><button class="btn" id="pvClose" type="button">ปิด</button><button class="btn" id="pvPdf" type="button">EXPORT TO PDF</button><button class="btn" id="pvPdf2" type="button">EXPORT TO PDF A4 2PAGE</button><button class="btn" id="pvXls" type="button">EXPORT TO EXCEL</button><button class="btn pri" id="pvSave" type="button">SAVE</button></div>
   </div>
   <div class="pvbody" id="pvBody"></div>
 </dialog>
@@ -776,8 +783,27 @@ function reportNode(isPreview){
 }
 function openPreview(){
   useSaved=true;var node;try{node=reportNode(true)}finally{useSaved=false}
+  pvMode('std');
   var host=$('pvBody');host.textContent='';host.appendChild(node);showDlg($('pv'));
 }
+/* PREVIEW of the A4 2PAGE report: the landscape pages (A4 = 1123x794px with a 7 mm margin) scaled to fit the preview window */
+function openPreviewA4(){
+  pvMode('a4');
+  var host=$('pvBody');host.textContent='';showDlg($('pv'));
+  var tmp=el('div','offscreen'),pages;document.body.appendChild(tmp);
+  useSaved=true;try{pages=buildPages(tmp)}finally{useSaved=false}   /* built unscaled so the defect rows split into pages exactly as in the PDF */
+  var np=pendingIds().length;
+  if(np){var w=el('div','report');w.style.cssText='width:auto;padding:0 0 10px;background:transparent';w.appendChild(el('div','rwarn','ข้อมูลในตัวอย่างนี้เป็นข้อมูล SAVE ล่าสุด ยังไม่รวมการแก้ไข '+np+' รายการที่ยังไม่ได้ SAVE'));host.appendChild(w)}
+  var sc=Math.min(1,(host.clientWidth-28)/1123);
+  pages.forEach(function(pg){var box=el('div','pva4');box.style.width=Math.round(1123*sc)+'px';box.style.height=Math.round(794*sc)+'px';
+    var inner=el('div');inner.style.cssText='width:1123px;height:794px;position:relative;transform:scale('+sc+');transform-origin:0 0';
+    pg.style.position='absolute';pg.style.left='26px';pg.style.top='26px';inner.appendChild(pg);box.appendChild(inner);host.appendChild(box)});
+  tmp.remove();
+}
+/* switch between the two report layouts inside the PREVIEW window */
+function pvMode(m){$('pvModeStd').setAttribute('aria-pressed',String(m==='std'));$('pvModeA4').setAttribute('aria-pressed',String(m==='a4'))}
+$('pvModeStd').addEventListener('click',function(){if($('pvModeStd').getAttribute('aria-pressed')!=='true')openPreview()});
+$('pvModeA4').addEventListener('click',function(){if($('pvModeA4').getAttribute('aria-pressed')!=='true')openPreviewA4()});
 /* before PREVIEW / EXPORT: warn when there are edits not yet SAVEd */
 var warnCb=null;
 function guard(label,fn){
@@ -794,6 +820,7 @@ $('bPreview').addEventListener('click',function(){guard('PREVIEW',openPreview)})
 $('pvClose').addEventListener('click',function(){hideDlg($('pv'))});
 $('pvSave').addEventListener('click',function(){hideDlg($('pv'));doSave()});
 $('pvPdf').addEventListener('click',function(){exportPdf()});
+$('pvPdf2').addEventListener('click',function(){exportPdf2()});
 $('pvXls').addEventListener('click',function(){exportXlsx()});
 $('bPdf').addEventListener('click',function(){guard('EXPORT TO PDF',exportPdf)});
 $('bXls').addEventListener('click',function(){guard('EXPORT TO EXCEL',exportXlsx)});
