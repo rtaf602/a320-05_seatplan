@@ -3,15 +3,21 @@ const MAP_SHEET = 'ผังที่นั่ง';
 const LOG_SHEET = 'ประวัติการแก้ไข';
 const ALL_SHEET = 'ทุกที่นั่ง และ Monitor';
 const BAD_SHEET = 'รวมข้อขัดข้องคงค้าง';
+const GAL_SHEET = 'Galley และห้องน้ำ';
 const INSPECTOR_CELL = 'D3';   // ช่องชื่อผู้ตรวจในชีท
 const LASTSAVE_BY = 'D2', LASTSAVE_AT = 'M2';
 const WRITE_PIN = '';          // รหัสเข้าหน้าเว็บและ SAVE เช่น '6020' (เว้นว่าง = ไม่ต้องใช้รหัส)
 const ADMIN_PIN = '';          // รหัสสำหรับปุ่ม "ล้างข้อมูลทั้งหมด" บนเว็บ (เว้นว่าง = ปิดปุ่มนี้)
 const TZ = 'Asia/Bangkok';
+const INIT_BY = 'ร.อ.ธัญชนิต จินตภากร';   // ชื่อผู้บันทึกค่าเริ่มต้นของ Galley / ห้องน้ำ ตอนเพิ่มเข้าผังครั้งแรก
 
 // ผังที่นั่งอยู่ท้ายไฟล์ (seatPlanLayout / planSheet) อ่านครั้งแรกที่ใช้
 let LAYOUT_ = null, FIRST_ROW_ = null;
 function layout_() { return LAYOUT_ || (LAYOUT_ = seatPlanLayout()); }
+// อุปกรณ์ Galley และห้องน้ำใช้สภาพ 3 ระดับ SEAT_E (ใช้งานได้ / ใช้งานได้บางส่วน / ใช้งานไม่ได้) ในช่อง s เหมือนที่นั่ง
+function isEq_(it) { return it.kind === 'eq' || it.kind === 'lav'; }
+function stList_(it) { return it.kind === 'mon' ? SEAT_M : isEq_(it) ? SEAT_E : SEAT_S; }
+function stTh_(it) { return it.kind === 'mon' ? 'สภาพ Monitor' : isEq_(it) ? (it.kind === 'lav' ? 'สภาพห้องน้ำ' : 'สภาพอุปกรณ์') : 'สภาพที่นั่ง'; }
 function firstMapRow_() { return FIRST_ROW_ || (FIRST_ROW_ = planSheet(layout_()).firstMapRow); }
 
 // ---------- Web API ----------
@@ -76,7 +82,7 @@ function buildMap_(sh) {
       const id = cands.filter(function (x) { return !items[x]; })[0];
       if (!id) continue;
       const it = layout_().items[id];
-      const st = cell(r + 1, c), list = it.kind === 'mon' ? SEAT_M : SEAT_S;
+      const st = cell(r + 1, c), list = stList_(it);
       if (st !== '' && list.indexOf(st) < 0) continue;
       items[id] = { id: id, kind: it.kind, label: it.name, status: [r + 1, c], note: [r + 2, c] };
     }
@@ -108,7 +114,7 @@ function loadData_() {
   Object.keys(m.items).forEach(function (id) {
     const it = m.items[id];
     const st = m.cell(it.status[0], it.status[1]);
-    const s = it.kind === 'seat' ? Math.max(0, SEAT_S.indexOf(st)) : 0;
+    const s = it.kind !== 'mon' ? Math.max(0, stList_(it).indexOf(st)) : 0;
     const mo = it.kind === 'mon' ? Math.max(0, SEAT_M.indexOf(st)) : 0;
     const lb = lastBy[id] || {};
     seats[id] = { s: s, m: mo, note: m.cell(it.note[0], it.note[1]), by: lb.by || '', at: lb.at || '' };
@@ -174,17 +180,17 @@ function saveData_(body) {
     changes.forEach(function (ch) {
       const it = m.items[String(ch.id)];
       if (!it) return;
-      const isSeat = it.kind === 'seat';
+      const isSeat = it.kind !== 'mon', SL = stList_(it);   // ที่นั่ง, อุปกรณ์ Galley และห้องน้ำ ใช้ช่อง s
       const fields = Array.isArray(ch.fields) ? ch.fields : ['s', 'm', 'note'];
       const base = ch.base && typeof ch.base === 'object' ? ch.base : null;
       const st = m.cell(it.status[0], it.status[1]);
       const cur = {
-        s: isSeat ? Math.max(0, SEAT_S.indexOf(st)) : 0,
+        s: isSeat ? Math.max(0, SL.indexOf(st)) : 0,
         m: isSeat ? 0 : Math.max(0, SEAT_M.indexOf(st)),
         note: m.cell(it.note[0], it.note[1])
       };
       const spec = {
-        s: isSeat ? { pos: it.status, th: 'สภาพที่นั่ง', val: clamp_(ch.s), txt: function (x) { return SEAT_S[x]; } } : null,
+        s: isSeat ? { pos: it.status, th: stTh_(it), val: clamp_(ch.s), txt: function (x) { return SL[x]; } } : null,
         m: isSeat ? null : { pos: it.status, th: 'สภาพ Monitor', val: clamp_(ch.m), txt: function (x) { return SEAT_M[x]; } },
         note: { pos: it.note, th: 'หมายเหตุ', val: String(ch.note || '').trim().slice(0, 500), txt: function (x) { return x; } }
       };
@@ -240,7 +246,7 @@ function resetData_(body) {
     const m = buildMap_(sh);
     Object.keys(m.items).forEach(function (id) {
       const it = m.items[id];
-      sh.getRange(it.status[0], it.status[1]).setValue(it.kind === 'mon' ? SEAT_M[0] : SEAT_S[0]);
+      sh.getRange(it.status[0], it.status[1]).setValue(stList_(it)[0]);
       sh.getRange(it.note[0], it.note[1]).setValue('');
     });
     const now = new Date();
@@ -284,7 +290,7 @@ function onEdit(e) {
   const at = {};
   Object.keys(m.items).forEach(function (id) {
     const it = m.items[id];
-    at[it.status.join(',')] = { id: it.label, field: it.kind === 'mon' ? 'สภาพ Monitor' : 'สภาพที่นั่ง' };
+    at[it.status.join(',')] = { id: it.label, field: stTh_(it) };
     at[it.note.join(',')] = { id: it.label, field: 'หมายเหตุ' };
   });
   const values = e.range.getDisplayValues();
@@ -354,8 +360,18 @@ function setupSheet() {
     log.getRange('A2:A').setNumberFormat('dd/MM/yyyy HH:mm:ss');
   }
 
+  // Galley / ห้องน้ำ ที่เพิ่งเพิ่มเข้าผัง (ยังไม่มีในผังเดิม): บันทึกค่าเริ่มต้น "ใช้งานได้" ลงประวัติ ในชื่อ INIT_BY
+  // ที่นั่งและ Monitor ไม่ถูกแตะ; รัน setupSheet ซ้ำจะไม่บันทึกซ้ำเพราะรายการมีอยู่ในผังแล้ว
+  const L = layout_(), now = new Date(), initRows = [];
+  L.order.forEach(function (id) {
+    const it = L.items[id];
+    if (!isEq_(it) || (keep && keep.items[id])) return;
+    initRows.push([now, 'ค่าเริ่มต้น', INIT_BY, it.name, stTh_(it), '', SEAT_E[0]]);
+  });
+  appendLog_(ss, initRows);
+
   // แท็บรายการอ้างถึงแท็บผังเดิม: ล้างสูตรก่อนลบผังเดิม แล้วสร้างใหม่ในแท็บเดิม (ไม่ลบแท็บ)
-  [ALL_SHEET, BAD_SHEET].forEach(function (n) { const s = ss.getSheetByName(n); if (s) s.clear(); });
+  [ALL_SHEET, BAD_SHEET, GAL_SHEET].forEach(function (n) { const s = ss.getSheetByName(n); if (s) s.clear(); });
   if (old) ss.deleteSheet(old);
   sh.setName(MAP_SHEET);
   SpreadsheetApp.flush();
@@ -364,7 +380,7 @@ function setupSheet() {
   // ลบแท็บว่าง Sheet1 / แผ่นงาน1 ที่มากับไฟล์ใหม่
   ss.getSheets().forEach(function (s) {
     const n = s.getName();
-    if ([MAP_SHEET, LOG_SHEET, ALL_SHEET, BAD_SHEET].indexOf(n) < 0 && s.getLastRow() === 0 && /^(Sheet|แผ่นงาน|ชีต)\s*\d+$/.test(n)) ss.deleteSheet(s);
+    if ([MAP_SHEET, LOG_SHEET, ALL_SHEET, BAD_SHEET, GAL_SHEET].indexOf(n) < 0 && s.getLastRow() === 0 && /^(Sheet|แผ่นงาน|ชีต)\s*\d+$/.test(n)) ss.deleteSheet(s);
   });
   ss.setActiveSheet(sh);
   ss.moveActiveSheet(1);
@@ -382,6 +398,7 @@ function applyPlan_(sh, P) {
 
   const dvS = SpreadsheetApp.newDataValidation().requireValueInList(SEAT_S, true).setAllowInvalid(false).build();
   const dvM = SpreadsheetApp.newDataValidation().requireValueInList(SEAT_M, true).setAllowInvalid(false).build();
+  const dvE = SpreadsheetApp.newDataValidation().requireValueInList(SEAT_E, true).setAllowInvalid(false).build();
   const SOLID = SpreadsheetApp.BorderStyle.SOLID;
   P.ops.forEach(function (o) {
     const rg = sh.getRange(o.r, o.c, o.rs, o.cs);
@@ -402,7 +419,7 @@ function applyPlan_(sh, P) {
     if (a.v) rg.setVerticalAlignment(a.v);
     if (a.wrap) rg.setWrap(true);
     if (o.border) rg.setBorder(true, true, true, true, null, null, '#000000', SOLID);
-    if (o.dv) rg.setDataValidation(o.dv === 'M' ? dvM : dvS);
+    if (o.dv) rg.setDataValidation(o.dv === 'M' ? dvM : o.dv === 'E' ? dvE : dvS);
     if (o.fmt) rg.setNumberFormat(o.fmt);
   });
   P.boxes.forEach(function (b) {
@@ -451,15 +468,17 @@ function buildListSheets_(ss, P) {
 
   const all = listSheet_(ss, ALL_SHEET, 1);
   listHeader_(all, hdr, wid);
-  const rows = layout_().order.map(function (id, i) {
+  const hist = function (col, row) {
+    return "=IFERROR(INDEX(FILTER('" + LOG_SHEET + "'!$" + col + "$2:$" + col + ",'" + LOG_SHEET + "'!$D$2:$D=$A" + row + "),COUNTIF('" + LOG_SHEET + "'!$D$2:$D,$A" + row + ")),\"\")";
+  };
+  const seatIds = layout_().order.filter(function (id) { return !isEq_(layout_().items[id]); });
+  const eqIds = layout_().order.filter(function (id) { return isEq_(layout_().items[id]); });
+  const rows = seatIds.map(function (id, i) {
     const it = layout_().items[id], p = P.pos[id], row = i + 2;
-    const hist = function (col) {
-      return "=IFERROR(INDEX(FILTER('" + LOG_SHEET + "'!$" + col + "$2:$" + col + ",'" + LOG_SHEET + "'!$D$2:$D=$A" + row + "),COUNTIF('" + LOG_SHEET + "'!$D$2:$D,$A" + row + ")),\"\")";
-    };
     return [it.name, it.kind === 'mon' ? 'Monitor' : 'ที่นั่ง', zn[it.zone],
       it.kind === 'seat' ? '=' + q + A1(p.status) : '-',
       it.kind === 'mon' ? '=' + q + A1(p.status) : '-',
-      '=' + q + A1(p.note) + '&""', hist('C'), hist('A')];
+      '=' + q + A1(p.note) + '&""', hist('C', row), hist('A', row)];
   });
   all.getRange(2, 1, rows.length, 8).setValues(rows)
     .setBorder(true, true, true, true, true, true, '#000000', SpreadsheetApp.BorderStyle.SOLID).setVerticalAlignment('top');
@@ -468,11 +487,39 @@ function buildListSheets_(ss, P) {
   all.getRange(2, 8, rows.length, 1).setNumberFormat('dd/MM/yyyy HH:mm').setHorizontalAlignment('center');
   statusColors_(all, rows.length + 1);
 
+  // Galley และห้องน้ำ: รายการ 8 คอลัมน์แบบเดียวกัน (สภาพอยู่คอลัมน์ D) + ตารางสรุปทางขวา
+  const gal = listSheet_(ss, GAL_SHEET, 1);
+  listHeader_(gal, ['รายการ', 'ประเภท', 'GALLEY / โซน', 'สภาพ', '-', 'หมายเหตุ', 'ผู้บันทึกล่าสุด', 'วัน/เวลาล่าสุด (TH-LT)'], [300, 80, 150, 120, 30, 300, 180, 140]);
+  const grows = eqIds.map(function (id, i) {
+    const it = layout_().items[id], p = P.pos[id], row = i + 2;
+    return [it.name, it.kind === 'lav' ? 'ห้องน้ำ' : it.tname, it.kind === 'lav' ? zn[it.zone] : it.group,
+      '=' + q + A1(p.status), '-', '=' + q + A1(p.note) + '&""', hist('C', row), hist('A', row)];
+  });
+  if (grows.length) {
+    gal.getRange(2, 1, grows.length, 8).setValues(grows)
+      .setBorder(true, true, true, true, true, true, '#000000', SpreadsheetApp.BorderStyle.SOLID).setVerticalAlignment('top');
+    gal.getRange(2, 2, grows.length, 4).setHorizontalAlignment('center');
+    gal.getRange(2, 6, grows.length, 1).setWrap(true);
+    gal.getRange(2, 8, grows.length, 1).setNumberFormat('dd/MM/yyyy HH:mm').setHorizontalAlignment('center');
+    const last = grows.length + 1, C = SEAT_COLOR;
+    const sumRows = [['GALLEY / ห้องน้ำ', 'จำนวน'].concat(SEAT_E)];
+    Object.keys(SEAT_GAL).forEach(function (k) { sumRows.push([SEAT_GAL[k], '=COUNTIF($C$2:$C$' + last + ',J' + (sumRows.length + 1) + ')'].concat(SEAT_E.map(function (t) { return '=COUNTIFS($C$2:$C$' + last + ',J' + (sumRows.length + 1) + ',$D$2:$D$' + last + ',"' + t + '")'; }))); });
+    sumRows.push(['ห้องน้ำ (LAVATORY)', '=COUNTIF($B$2:$B$' + last + ',"ห้องน้ำ")'].concat(SEAT_E.map(function (t) { return '=COUNTIFS($B$2:$B$' + last + ',"ห้องน้ำ",$D$2:$D$' + last + ',"' + t + '")'; })));
+    const sr = gal.getRange(1, 10, sumRows.length, 5);
+    sr.setValues(sumRows).setBorder(true, true, true, true, true, true, '#000000', SpreadsheetApp.BorderStyle.SOLID).setFontFamily('Tahoma').setFontSize(9).setHorizontalAlignment('center');
+    gal.getRange(1, 10, 1, 5).setFontWeight('bold').setBackgrounds([[C.ZONEH, C.ZONEH, C.GREEN, C.YEL, C.RED]]).setWrap(true);
+    gal.getRange(2, 10, sumRows.length - 1, 1).setHorizontalAlignment('left').setFontWeight('bold').setBackground(C.CABIN);
+    gal.setColumnWidth(9, 20); gal.setColumnWidth(10, 170); [11, 12, 13, 14].forEach(function (c) { gal.setColumnWidth(c, 90); });
+    statusColors_(gal, last);
+  }
+
   const bad = listSheet_(ss, BAD_SHEET, 1);
   listHeader_(bad, hdr, wid);
-  const s = "'" + ALL_SHEET + "'!";
-  bad.getRange('A2').setFormula('=IFERROR(FILTER(' + s + 'A2:H,(' + s + 'D2:D="' + SEAT_S[1] + '")+(' + s + 'D2:D="' + SEAT_S[2] + '")+(' +
-    s + 'E2:E="' + SEAT_M[1] + '")+(' + s + 'E2:E="' + SEAT_M[2] + '")+(' + s + 'F2:F<>"")),"ไม่มีข้อขัดข้องคงค้าง")');
+  const s = "'" + ALL_SHEET + "'!", g = "'" + GAL_SHEET + "'!";
+  const both = function (col) { return '{' + s + col + '2:' + col + ';' + g + col + '2:' + col + '}'; };
+  bad.getRange('A2').setFormula('=IFERROR(FILTER({' + s + 'A2:H;' + g + 'A2:H},(' + both('D') + '="' + SEAT_S[1] + '")+(' + both('D') + '="' + SEAT_S[2] + '")+(' +
+    both('D') + '="' + SEAT_E[1] + '")+(' + both('D') + '="' + SEAT_E[2] + '")+(' +
+    both('E') + '="' + SEAT_M[1] + '")+(' + both('E') + '="' + SEAT_M[2] + '")+(' + both('F') + '<>"")),"ไม่มีข้อขัดข้องคงค้าง")');
   bad.getRange('H2:H').setNumberFormat('dd/MM/yyyy HH:mm');
   bad.getRange('F2:F').setWrap(true);
   statusColors_(bad, 200);
@@ -482,7 +529,7 @@ function statusColors_(s, end) {
   const rg = [s.getRange('D2:E' + end)];
   const C = SEAT_COLOR;
   s.setConditionalFormatRules([
-    [SEAT_S[2], C.RED, '#FFFFFF'], [SEAT_M[2], C.RED, '#FFFFFF'], [SEAT_S[1], C.YEL, null], [SEAT_M[1], C.YEL, null]
+    [SEAT_S[2], C.RED, '#FFFFFF'], [SEAT_M[2], C.RED, '#FFFFFF'], [SEAT_E[2], C.RED, '#FFFFFF'], [SEAT_S[1], C.YEL, null], [SEAT_M[1], C.YEL, null], [SEAT_E[1], C.YEL, null]
   ].map(function (x) {
     let b = SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(x[0]).setBackground(x[1]).setRanges(rg);
     if (x[2]) b = b.setFontColor(x[2]);
