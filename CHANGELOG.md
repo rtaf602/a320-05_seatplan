@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-11-09 · ทางออกฉุกเฉินเหลือคู่เดียว
+- เหลือเฉพาะทางออกที่ VIP OB ชื่อ **EMER EXIT L / EMER EXIT R** (เอา EMER EXIT AFT ออก) ทั้งหน้าเว็บ, PDF ทุกแบบ, Excel และ Google Sheet
+- ในชีท/Excel: EMER EXIT อยู่คอลัมน์ A และ P นอกขอบสีฟ้า, DOOR 1L/1R และ 4L/4R ลากถึงขอบ (A-H, J-P)
+- ต้องวาง `Code.gs` ใหม่ รัน `setupSheet` และ Deploy New version
+
 ## 2026-11-09 · เพิ่ม Galley, ห้องน้ำ และประตู (ต่อยอดแบบ A340)
 
 ### หน้าเว็บ

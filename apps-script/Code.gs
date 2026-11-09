@@ -663,7 +663,7 @@ function seatPlanLayout() {
   zone('C', 'VIP OC (8 Seats)', 'VIP OC');
   mon('MON-C1', 'C', 'w21', 'หน้าที่นั่ง 7B, 7C', 'หน้า 7B-7C');
   mon('MON-C2', 'C', 'w21', 'หน้าที่นั่ง 7D, 7F', 'หน้า 7D-7F');
-  blk('C', '', [{ text: '◀ EMER\nEXIT\nAFT L', c: 1, span: 1, fill: SEAT_COLOR.EXIT, bold: true }, { id: lav('CV', 'C', 'CENTER VIP LAVATORY'), c: R2S, span: 4 }, { text: 'EMER\nEXIT\nAFT R ▶', c: 16, span: 1, fill: SEAT_COLOR.EXIT, bold: true }]);
+  blk('C', 'LAV', [{ id: lav('CV', 'C', 'CENTER VIP LAVATORY'), c: R2S, span: 4 }]);
   blk('C', 'Monitor', [{ id: 'MON-C1', c: L2, span: 4 }, { id: 'MON-C2', c: R2S, span: 4 }]);
   [7, 8].forEach(function (n) {
     ['B', 'C', 'D', 'F'].forEach(function (x) { seat(n + x, 'C'); });
@@ -760,9 +760,9 @@ function planSheet(L) {
     if (b.t === 'door' && b.exit) {
       var ef = { b: true, sz: 8, color: '#A33A00' };
       /* emergency exits sit outside the blue cabin: column A (left) and P (right) */
-      op({ r: r, c: 1, v: '◀ EMER\nEXIT\n' + b.code + ' L', fill: C.EXIT, font: ef, align: { h: 'left', v: 'middle', wrap: true }, border: false });
-      op({ r: r, c: 16, v: 'EMER\nEXIT\n' + b.code + ' R ▶', fill: C.EXIT, font: ef, align: { h: 'right', v: 'middle', wrap: true }, border: false });
-      heights[r] = 46; heights[r + 1] = 6; r += 2;
+      op({ r: r, c: 1, v: '◀ EMER\nEXIT L', fill: C.EXIT, font: ef, align: { h: 'left', v: 'middle', wrap: true }, border: false });
+      op({ r: r, c: 16, v: 'EMER\nEXIT R ▶', fill: C.EXIT, font: ef, align: { h: 'right', v: 'middle', wrap: true }, border: false });
+      heights[r] = 34; heights[r + 1] = 6; r += 2;
       return;
     }
     if (b.t === 'door') {
