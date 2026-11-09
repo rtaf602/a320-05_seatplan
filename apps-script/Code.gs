@@ -663,7 +663,7 @@ function seatPlanLayout() {
   zone('C', 'VIP OC (8 Seats)', 'VIP OC');
   mon('MON-C1', 'C', 'w21', 'หน้าที่นั่ง 7B, 7C', 'หน้า 7B-7C');
   mon('MON-C2', 'C', 'w21', 'หน้าที่นั่ง 7D, 7F', 'หน้า 7D-7F');
-  blk('C', '', [{ text: '◀ EMER EXIT AFT L', c: 2, span: 1, fill: SEAT_COLOR.EXIT, bold: true }, { id: lav('CV', 'C', 'CENTER VIP LAVATORY'), c: R2S, span: 4 }, { text: 'EMER EXIT AFT R ▶', c: 16, span: 1, fill: SEAT_COLOR.EXIT, bold: true }]);
+  blk('C', '', [{ text: '◀ EMER\nEXIT\nAFT L', c: 1, span: 1, fill: SEAT_COLOR.EXIT, bold: true }, { id: lav('CV', 'C', 'CENTER VIP LAVATORY'), c: R2S, span: 4 }, { text: 'EMER\nEXIT\nAFT R ▶', c: 16, span: 1, fill: SEAT_COLOR.EXIT, bold: true }]);
   blk('C', 'Monitor', [{ id: 'MON-C1', c: L2, span: 4 }, { id: 'MON-C2', c: R2S, span: 4 }]);
   [7, 8].forEach(function (n) {
     ['B', 'C', 'D', 'F'].forEach(function (x) { seat(n + x, 'C'); });
@@ -705,7 +705,7 @@ function planSheet(L) {
   var LASTC = 15, A = seatColName;
   function op(o) { o.rs = o.rs || 1; o.cs = o.cs || 1; ops.push(o); return o; }
   var hdr = { b: true, sz: 8 }, mid = { h: 'center', v: 'middle', wrap: true };
-  var widths = { 1: 12, 2: 60 };
+  var widths = { 1: 60, 2: 60 };   // A: left-hand emergency exit marks, outside the blue cabin
   for (var c = 3; c <= 8; c++) widths[c] = 52;
   widths[9] = 22;
   for (c = 10; c <= 15; c++) widths[c] = 52;
@@ -759,17 +759,18 @@ function planSheet(L) {
     }
     if (b.t === 'door' && b.exit) {
       var ef = { b: true, sz: 8, color: '#A33A00' };
-      op({ r: r, c: 2, v: '◀ EMER EXIT ' + b.code + ' L', fill: C.EXIT, font: ef, align: { h: 'left', v: 'middle', wrap: true }, border: false });
-      op({ r: r, c: 16, v: 'EMER EXIT ' + b.code + ' R ▶', fill: C.EXIT, font: ef, align: { h: 'right', v: 'middle', wrap: true }, border: false });
-      heights[r] = 28; heights[r + 1] = 6; r += 2;
+      /* emergency exits sit outside the blue cabin: column A (left) and P (right) */
+      op({ r: r, c: 1, v: '◀ EMER\nEXIT\n' + b.code + ' L', fill: C.EXIT, font: ef, align: { h: 'left', v: 'middle', wrap: true }, border: false });
+      op({ r: r, c: 16, v: 'EMER\nEXIT\n' + b.code + ' R ▶', fill: C.EXIT, font: ef, align: { h: 'right', v: 'middle', wrap: true }, border: false });
+      heights[r] = 46; heights[r + 1] = 6; r += 2;
       return;
     }
     if (b.t === 'door') {
       var dc = b.exit ? C.EXIT : C.DOOR, dfont = { b: true, sz: 8, color: b.exit ? '#A33A00' : C.MUTED };
-      op({ r: r, c: 3, cs: 6, v: b.left, fill: dc, font: dfont, align: { h: 'left', v: 'middle' }, border: false });
+      /* doors run to the outer edges: A-H on the left, J-P on the right */
+      op({ r: r, c: 1, cs: 8, v: b.left, fill: dc, font: dfont, align: { h: 'left', v: 'middle' }, border: false });
       op({ r: r, c: 9, cs: 1, fill: dc, border: false });
-      op({ r: r, c: 10, cs: 6, v: b.right, fill: dc, font: dfont, align: { h: 'right', v: 'middle' }, border: false });
-      op({ r: r, c: 2, v: b.exit ? 'EXIT' : 'DOOR', font: { b: true, sz: 7, color: C.MUTED }, align: { h: 'right', v: 'middle' }, border: false });
+      op({ r: r, c: 10, cs: 7, v: b.right, fill: dc, font: dfont, align: { h: 'right', v: 'middle' }, border: false });
       heights[r] = 20; heights[r + 1] = 6; r += 2;
       return;
     }
