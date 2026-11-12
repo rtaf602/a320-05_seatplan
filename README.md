@@ -48,6 +48,16 @@ Bin Mounted Retractable Monitors (OVHD Monitor) 12 Inch (8 จอ)
 PDF ทั้งสองแบบสร้างที่ **600 dpi** (บน iPhone/iPad/Android ลดลงอัตโนมัติตามขนาดภาพสูงสุดที่เครื่องรองรับ)
 ชื่อไฟล์: `YYMMDD HHMM TH-LT A320-05_STATUS_SEAT_PLAN_ALL PAGES.pdf`, `..._SUMMARY_4PAGES.pdf`, `..._STATUS_SEAT_PLAN.xlsx`
 
+## การเข้าใช้งาน: ระบบ Login กลาง ฝูง.602 (ตั้งแต่ 12 พ.ย. 2026)
+- ไม่มีรหัส (`WRITE_PIN`, `ADMIN_PIN`) และไม่ต้องพิมพ์ชื่อผู้ตรวจแล้ว เปิดหน้าเว็บแล้วระบบพาไปหน้าเข้าสู่ระบบกลาง ([repo eadmin](https://github.com/rtaf602/eadmin)) แล้วพากลับมา
+- Admin หลักกำหนดในหน้า Admin ส่วน "สิทธิ์เข้าใช้งานเว็บ" (รหัสเว็บ `WEB3`)
+  - **Admin**: ดู แก้ไข SAVE ส่งออก และ "ล้างข้อมูลทั้งหมด" · **Editor**: ดู แก้ไข SAVE ส่งออก · **Viewer**: ดูอย่างเดียว ไม่มี SAVE, PREVIEW และส่งออก · ไม่มีสิทธิ์: เข้าไม่ได้
+- ชื่อผู้ตรวจ = ชื่อ-สกุลของบัญชีที่ Login (ระบบ Login หาจาก Username ในชีท LOGIN DATABASE) ใช้ในประวัติการแก้ไข SAVE ล่าสุด และไฟล์ที่ส่งออก
+- EXPORT TO PDF ALL PAGES / EXPORT PDF SUMMARY 4 PAGES / EXPORT TO EXCEL บันทึกในแท็บ **ประวัติการส่งออก** (สร้างเองครั้งแรกที่มีการส่งออก): เวลา, ชื่อ-สกุล, Username, Role, ชนิดไฟล์, ชื่อไฟล์
+- ทุกคำขอ Apps Script ถามระบบ Login (SAVE ถามทุกครั้ง การดึงข้อมูลถามซ้ำทุก 1 นาที)
+- ตั้งค่าครั้งเดียว: ใน `Code.gs` บรรทัด `const LOGIN = { LOGIN_URL: '', ... }` ใส่ที่อยู่ระบบหลังบ้านของระบบ Login (ค่า `backendUrl` ใน `docs/assets/config.js` ของ repo eadmin) แล้วเลือกฟังก์ชัน **setup** > **Run** (อนุญาตสิทธิ์ "เชื่อมต่อบริการภายนอก") Execution log ต้องขึ้น "ตั้งค่าเสร็จแล้ว" · ครั้งต่อไปที่วางโค้ดใหม่ ช่องนี้ว่างได้
+- โค้ด Apps Script แก้ที่ `apps-script/server.js` แล้วรัน `sh tools/build-code-gs.sh` (อย่าแก้ `Code.gs` ตรง ๆ จะถูกเขียนทับ)
+
 ## การติดตั้ง (ทำครั้งเดียว)
 
 ### 1. เปิดหน้าเว็บด้วย GitHub Pages
@@ -58,7 +68,7 @@ PDF ทั้งสองแบบสร้างที่ **600 dpi** (บน i
 ### 2. ติดตั้ง Apps Script ใน Google Sheet
 1. เปิด Google Sheet **Seat Plan 320(05) (For Admin)** > **ส่วนขยาย (Extensions) > Apps Script**
 2. ลบโค้ดเดิมทั้งหมดใน `Code.gs` แล้ววางโค้ดจาก `apps-script/Code.gs`
-3. ถ้าต้องการรหัส ให้แก้บรรทัด `WRITE_PIN` / `ADMIN_PIN` (ส่วน "ตั้งค่า" ต้นไฟล์)
+- (เดิมใช้รหัส `WRITE_PIN` / `ADMIN_PIN` ตอนนี้ใช้ระบบ Login กลางแทน ดูหัวข้อการเข้าใช้งาน)
 4. กด **บันทึก (Save)**
 5. **สร้าง/จัดแท็บใหม่:** เลือกฟังก์ชัน **setupSheet** แล้วกด **Run**
    ระบบจะสร้างแท็บ **ผังที่นั่ง**, **Galley และห้องน้ำ**, **รวมข้อขัดข้องคงค้าง**, **ทุกที่นั่ง และ Monitor**, **ประวัติการแก้ไข**
@@ -82,6 +92,6 @@ PDF ทั้งสองแบบสร้างที่ **600 dpi** (บน i
 - ถ้ายังไม่ได้ใส่ `API_URL` หน้าเว็บยังเปิดดูและแก้ได้ แต่ SAVE ไม่ได้
 
 ## ข้อควรรู้ด้านความปลอดภัย
-- Web App ตั้งเป็น "Anyone" ใครได้ URL ก็อ่าน/บันทึกได้ จึงแนะนำให้ตั้ง `WRITE_PIN`
+- (เดิมใช้รหัส `WRITE_PIN` / `ADMIN_PIN` ตอนนี้ใช้ระบบ Login กลางแทน ดูหัวข้อการเข้าใช้งาน)
 - Repo เป็น public ห้ามใส่รหัสใน `config.js` หรือไฟล์ใดใน repo ให้ตั้งรหัสเฉพาะใน Apps Script
 - ควรล็อกแท็บ "ประวัติการแก้ไข" ด้วย Protect sheet ให้เฉพาะ Admin
